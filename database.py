@@ -1,16 +1,16 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from models import Base
+import os
+from dotenv import load_dotenv
+from supabase import create_client, Client
 
-# Using SQLite local database
-SQLALCHEMY_DATABASE_URL = "sqlite:///./fundraising.db"
+load_dotenv()
 
-# connect_args={"check_same_thread": False} This is a requirement specific to SQLite.
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-# Functions for initializing database tables
-def init_db():
-    Base.metadata.create_all(bind=engine)
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise ValueError("❌ 请检查 .env 文件中的 SUPABASE_URL 和 SUPABASE_SERVICE_ROLE_KEY")
+
+# 创建 Supabase 客户端（后端专用）
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+print("✅ Supabase 数据库连接已初始化（使用 service_role key）")

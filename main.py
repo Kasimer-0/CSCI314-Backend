@@ -3,7 +3,8 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
-from database import SessionLocal, engine, init_db
+from database import supabase
+from pprint import pprint
 from datetime import datetime, timedelta
 
 import models
