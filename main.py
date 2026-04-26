@@ -6,21 +6,20 @@ import jwt
 
 from typing import Optional
 
-# Import Supabase
+# 导入 Supabase
 from database import supabase
 
 app = FastAPI(title="CSIT314 Backend - IAM Module (Supabase)")
 
-# ====================== Configuration ======================
+# ====================== 配置 ======================
 SECRET_KEY = "CSIT314_2026_SUPER_SECRET_KEY_CHANGE_THIS_IN_PRODUCTION_!@#$"  # 建议从 .env 读取
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60   # 建议改成60分钟
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-# ====================== 密码处理（使用纯 bcrypt，解决兼容性问题） ======================
+# ====================== 密码处理 ======================
 import bcrypt
-
 def get_password_hash(password: str) -> str:
     """对密码进行加密（推荐写法）"""
     # 把密码转为 bytes，然后加密
@@ -29,15 +28,25 @@ def get_password_hash(password: str) -> str:
     return hashed.decode('utf-8')
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
+def verify_password(plain_password: str, password_hash: str) -> bool:
     """验证密码是否正确"""
     try:
         return bcrypt.checkpw(
             plain_password.encode('utf-8'), 
-            hashed_password.encode('utf-8')
+            password_hash.encode('utf-8')
         )
     except Exception:
         return False
+
+
+def create_access_token(data: dict):
+    """生成 JWT Token"""
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
 
 # ====================== 获取当前登录用户 ======================
 def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -101,13 +110,13 @@ def register_user(user: UserCreate):
             raise HTTPException(status_code=400, detail="该邮箱已被注册！")
 
         # 加密密码
-        hashed_password = get_password_hash(user.password)
+        password_hash = get_password_hash(user.password)
 
         # 准备插入数据（严格匹配你 Supabase 的 users 表字段）
         new_user = {
             "username": user.username,
             "email": user.email,
-            "password_hash": hashed_password,
+            "password_hash": password_hash,
             "role_id": 1,           # 根据你 roles 表调整（0 或 1）
             "status": "Pending"
         }
