@@ -7,14 +7,14 @@ from models import UserRole, UserStatus
 class UserCreate(BaseModel):
     email: EmailStr  # EmailStr will automatically verify the email address format (e.g., whether it contains @)
     password: str
-    full_name: str
+    username: str
     phone_number: Optional[str] = None
 
 # 2. The data format returned to the front end (absolutely must not contain passwords!)
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
-    full_name: str
+    username: str
     role: UserRole
     status: UserStatus
     created_at: datetime

@@ -43,7 +43,7 @@ class User(Base):
     # Story 9: Privacy Encryption, Never Store Plaintext Passwords
     hashed_password = Column(String(255), nullable=False)
 
-    full_name = Column(String(100), index=True)
+    username = Column(String(100), index=True)
     phone_number = Column(String(20), nullable=True)  # For use in updating contact information in Story 4
 
     # Role and Status Control (Story 10, 11)

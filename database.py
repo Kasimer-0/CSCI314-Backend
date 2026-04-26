@@ -8,9 +8,9 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("❌ 请检查 .env 文件中的 SUPABASE_URL 和 SUPABASE_SERVICE_ROLE_KEY")
+    raise ValueError("❌ Please check the SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in the .env file")
 
-# 创建 Supabase 客户端（后端专用）
+# Create Supabase client (backend-only)
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-print("✅ Supabase 数据库连接已初始化（使用 service_role key）")
+print("✅ Supabase database connection initialized (using service_role key)")
