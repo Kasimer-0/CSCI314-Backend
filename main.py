@@ -2,37 +2,41 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import EmailStr, BaseModel
 from datetime import datetime, timedelta, timezone
+
 import jwt
+import schemas
 
 from typing import Optional
 
-# 导入 Supabase
+# Import Supabase
 from database import supabase
 
 app = FastAPI(title="CSIT314 Backend - IAM Module (Supabase)")
 
-# ====================== 配置 ======================
-SECRET_KEY = "CSIT314_2026_SUPER_SECRET_KEY_CHANGE_THIS_IN_PRODUCTION_!@#$"  # 建议从 .env 读取
+# ====================== Configuration ======================
+SECRET_KEY = "CSIT314_2026_SUPER_SECRET_KEY_CHANGE_THIS_IN_PRODUCTION_!@#$"  # Recommended to load from .env
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60   # 建议改成60分钟
+ACCESS_TOKEN_EXPIRE_MINUTES = 60  # Recommended to set to 60 minutes
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-# ====================== 密码处理 ======================
+# ====================== Password Handling ======================
 import bcrypt
+
+
 def get_password_hash(password: str) -> str:
-    """对密码进行加密（推荐写法）"""
-    # 把密码转为 bytes，然后加密
+    """Hash the password (recommended approach)"""
+    # Convert password to bytes and hash it
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed.decode('utf-8')
 
 
 def verify_password(plain_password: str, password_hash: str) -> bool:
-    """验证密码是否正确"""
+    """Verify if the password is correct"""
     try:
         return bcrypt.checkpw(
-            plain_password.encode('utf-8'), 
+            plain_password.encode('utf-8'),
             password_hash.encode('utf-8')
         )
     except Exception:
@@ -40,7 +44,7 @@ def verify_password(plain_password: str, password_hash: str) -> bool:
 
 
 def create_access_token(data: dict):
-    """生成 JWT Token"""
+    """Generate JWT token"""
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
@@ -48,12 +52,12 @@ def create_access_token(data: dict):
     return encoded_jwt
 
 
-# ====================== 获取当前登录用户 ======================
+# ====================== Get Current Logged-in User ======================
 def get_current_user(token: str = Depends(oauth2_scheme)):
-    """验证 Token 并返回当前用户信息"""
+    """Validate token and return current user information"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="无效的凭证或Token已过期",
+        detail="Invalid credentials or token expired",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
@@ -64,20 +68,20 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     except jwt.PyJWTError:
         raise credentials_exception
 
-    # 从 Supabase 查询用户
+    # Query user from Supabase
     response = supabase.table("users").select("*").eq("email", email).execute()
     if not response.data:
         raise credentials_exception
-    
+
     user = response.data[0]
     return user
 
 
-# ====================== Pydantic 数据模型 ======================
+# ====================== Pydantic Data Models ======================
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    username: str                    # 对应你数据库的 username 字段
+    username: str  # Corresponds to the username field in database
     phone_number: Optional[str] = None
 
 
@@ -96,41 +100,41 @@ class Token(BaseModel):
 
 
 # ===========================================
-# 1. 注册接口
+# 1. Register API
 # ===========================================
 @app.post("/auth/register", response_model=UserResponse)
 def register_user(user: UserCreate):
-    """用户注册 - 改进版（带详细错误日志）"""
+    """User registration - enhanced version (with detailed error logging)"""
     try:
-        print(f"收到注册请求: email={user.email}, username={user.username}")  # 打印调试信息
+        print(f"Received registration request: email={user.email}, username={user.username}")  # Debug log
 
-        # 检查邮箱是否已存在
+        # Check if email already exists
         existing = supabase.table("users").select("email").eq("email", user.email).execute()
         if existing.data:
-            raise HTTPException(status_code=400, detail="该邮箱已被注册！")
+            raise HTTPException(status_code=400, detail="This email is already registered!")
 
-        # 加密密码
+        # Hash password
         password_hash = get_password_hash(user.password)
 
-        # 准备插入数据（严格匹配你 Supabase 的 users 表字段）
+        # Prepare data for insertion (must match Supabase users table fields)
         new_user = {
             "username": user.username,
             "email": user.email,
             "password_hash": password_hash,
-            "role_id": 1,           # 根据你 roles 表调整（0 或 1）
+            "role_id": 1,  # Adjust based on roles table (0 or 1)
             "status": "Pending"
         }
 
-        print("准备插入的数据:", new_user)   # 打印要插入的内容
+        print("Data to be inserted:", new_user)  # Debug log
 
-        # 执行插入
+        # Execute insertion
         response = supabase.table("users").insert(new_user).execute()
 
         if not response.data:
-            raise HTTPException(status_code=500, detail="数据库插入失败，返回空数据")
+            raise HTTPException(status_code=500, detail="Database insertion failed, empty response")
 
         created_user = response.data[0]
-        print("注册成功，用户ID:", created_user.get("user_id"))
+        print("Registration successful, user ID:", created_user.get("user_id"))
 
         return {
             "user_id": created_user.get("user_id"),
@@ -142,52 +146,53 @@ def register_user(user: UserCreate):
         }
 
     except Exception as e:
-        # 关键：打印详细错误到终端
+        # Critical: print detailed error logs to terminal
         import traceback
-        print("=== 注册接口发生错误 ===")
-        print(f"错误类型: {type(e).__name__}")
-        print(f"错误信息: {str(e)}")
-        traceback.print_exc()   # 打印完整调用栈
-        print("========================")
-        
+        print("=== Registration API Error ===")
+        print(f"Error Type: {type(e).__name__}")
+        print(f"Error Message: {str(e)}")
+        traceback.print_exc()  # Full stack trace
+        print("============================")
+
         raise HTTPException(
-            status_code=500, 
-            detail=f"注册失败: {str(e)}"
+            status_code=500,
+            detail=f"Registration failed: {str(e)}"
         )
 
+
 # ===========================================
-# 2. 登录接口
+# 2. Login API
 # ===========================================
 @app.post("/auth/login", response_model=Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    """用户登录"""
-    # 根据邮箱查找用户
+    """User login"""
+    # Find user by email
     response = supabase.table("users").select("*").eq("email", form_data.username).execute()
     user = response.data[0] if response.data else None
 
     if not user or not verify_password(form_data.password, user.get("password_hash")):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="邮箱或密码错误",
+            detail="Invalid email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # 检查账号状态
+    # Check account status
     if user.get("status") in ["Suspended", "suspended"]:
-        raise HTTPException(status_code=403, detail="账号已被封禁，请联系管理员")
+        raise HTTPException(status_code=403, detail="Account is suspended, please contact admin")
 
-    # 生成 Token
+    # Generate token
     access_token = create_access_token(data={"sub": user["email"]})
-    
+
     return {"access_token": access_token, "token_type": "bearer"}
 
 
 # ===========================================
-# 3. 查看个人信息（需要登录）
+# 3. View Profile (Requires Login)
 # ===========================================
 @app.get("/profile", response_model=UserResponse)
 def read_users_me(current_user: dict = Depends(get_current_user)):
-    """获取当前登录用户的信息"""
+    """Get current logged-in user's information"""
     return {
         "user_id": current_user.get("user_id"),
         "username": current_user.get("username"),
@@ -198,7 +203,75 @@ def read_users_me(current_user: dict = Depends(get_current_user)):
     }
 
 
-# 根路径健康检查
+# Root health check
 @app.get("/")
 def root():
     return {"message": "CSIT314 Backend is running successfully! (Supabase + FastAPI)"}
+
+
+# ===========================================
+# 4. User Registration (Integrated with S9 encryption, S10 default role, S11 pending status)
+# ===========================================
+@app.post("/auth/register", response_model=schemas.UserResponse)
+def register_user(user: schemas.UserCreate):
+    # a. Check if email already exists
+    response = supabase.table("users").select("*").eq("email", user.email).execute()
+    if len(response.data) > 0:
+        raise HTTPException(status_code=400, detail="Email already registered!")
+
+    # b. Privacy encryption (Story 9)
+    hashed_pwd = get_password_hash(user.password)
+
+    # c. Prepare data for Supabase insertion
+    new_user_data = {
+        "email": user.email,
+        "password_hash": hashed_pwd,  # Must match login query field
+        "username": user.username,
+        "phone_number": user.phone_number,
+        # Restore S10 & S11: assign default values
+        "role": schemas.UserRole.DONEE.value,
+        "status": schemas.UserStatus.PENDING.value
+    }
+
+    # d. Insert into Supabase database
+    insert_response = supabase.table("users").insert(new_user_data).execute()
+
+    if not insert_response.data:
+        raise HTTPException(status_code=500, detail="User creation failed, please check table structure")
+
+    return insert_response.data[0]
+
+
+# ===========================================
+# 5. Helper: Audit Log Generator (Story 12)
+# ===========================================
+def log_admin_action(admin_id: int, target_user_id: int, action: str, details: str = ""):
+    log_data = {
+        "admin_id": admin_id,
+        "target_user_id": target_user_id,
+        "action": action,
+        "details": details
+    }
+    supabase.table("audit_logs").insert(log_data).execute()
+
+
+# ===========================================
+# 6. Admin Feature: Suspend User and Log Action (Story 11 & Story 12)
+# ===========================================
+@app.post("/admin/users/{target_user_id}/suspend")
+def suspend_user(target_user_id: int):
+    # a. Update user status in Supabase
+    update_res = supabase.table("users").update({"status": "suspended"}).eq("id", target_user_id).execute()
+
+    if len(update_res.data) == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # b. Log admin action (assuming admin ID = 1)
+    log_admin_action(
+        admin_id=1,
+        target_user_id=target_user_id,
+        action="SUSPEND_USER",
+        details="Admin manually suspended this account"
+    )
+
+    return {"message": "User successfully suspended and logged in audit logs"}
