@@ -102,63 +102,37 @@ class Token(BaseModel):
 # ===========================================
 # 1. Register API
 # ===========================================
-@app.post("/auth/register", response_model=UserResponse)
-def register_user(user: UserCreate):
-    """User registration - enhanced version (with detailed error logging)"""
+@app.post("/auth/register", response_model=schemas.UserResponse)
+def register_user(user: schemas.UserCreate):
+    # 1. Check if the email address has already been registered.
+    response = supabase.table("users").select("*").eq("email", user.email).execute()
+    if len(response.data) > 0:
+        raise HTTPException(status_code=400, detail="邮箱已被注册！")
+
+    # 2. Encryption Password
+    hashed_pwd = get_password_hash(user.password)
+
+    # 3. Construct the data to be stored in the database
+    new_user_data = {
+        "email": user.email,
+        "password_hash": hashed_pwd,
+        "username": user.username,
+        "phone_number": user.phone_number,
+        "role": schemas.UserRole.DONEE.value,
+        "status": schemas.UserStatus.PENDING.value
+    }
+
+    # 4. Perform the insert operation and catch errors.
     try:
-        print(f"Received registration request: email={user.email}, username={user.username}")  # Debug log
-
-        # Check if email already exists
-        existing = supabase.table("users").select("email").eq("email", user.email).execute()
-        if existing.data:
-            raise HTTPException(status_code=400, detail="This email is already registered!")
-
-        # Hash password
-        password_hash = get_password_hash(user.password)
-
-        # Prepare data for insertion (must match Supabase users table fields)
-        new_user = {
-            "username": user.username,
-            "email": user.email,
-            "password_hash": password_hash,
-            "role_id": 1,  # Adjust based on roles table (0 or 1)
-            "status": "Pending"
-        }
-
-        print("Data to be inserted:", new_user)  # Debug log
-
-        # Execute insertion
-        response = supabase.table("users").insert(new_user).execute()
-
-        if not response.data:
-            raise HTTPException(status_code=500, detail="Database insertion failed, empty response")
-
-        created_user = response.data[0]
-        print("Registration successful, user ID:", created_user.get("user_id"))
-
-        return {
-            "user_id": created_user.get("user_id"),
-            "username": created_user.get("username"),
-            "email": created_user.get("email"),
-            "role_id": created_user.get("role_id"),
-            "status": created_user.get("status"),
-            "created_at": created_user.get("created_at")
-        }
-
+        insert_response = supabase.table("users").insert(new_user_data).execute()
     except Exception as e:
-        # Critical: print detailed error logs to terminal
-        import traceback
-        print("=== Registration API Error ===")
-        print(f"Error Type: {type(e).__name__}")
-        print(f"Error Message: {str(e)}")
-        traceback.print_exc()  # Full stack trace
-        print("============================")
+        # If there are other incorrect column names in the database, the error will be clearly returned to the webpage here.
+        raise HTTPException(status_code=500, detail=f"Database insertion failed: {str(e)}")
 
-        raise HTTPException(
-            status_code=500,
-            detail=f"Registration failed: {str(e)}"
-        )
+    if not insert_response.data:
+        raise HTTPException(status_code=500, detail="Registration failed, no data returned from the database.")
 
+    return insert_response.data[0]
 
 # ===========================================
 # 2. Login API
@@ -208,42 +182,8 @@ def read_users_me(current_user: dict = Depends(get_current_user)):
 def root():
     return {"message": "CSIT314 Backend is running successfully! (Supabase + FastAPI)"}
 
-
 # ===========================================
-# 4. User Registration (Integrated with S9 encryption, S10 default role, S11 pending status)
-# ===========================================
-@app.post("/auth/register", response_model=schemas.UserResponse)
-def register_user(user: schemas.UserCreate):
-    # a. Check if email already exists
-    response = supabase.table("users").select("*").eq("email", user.email).execute()
-    if len(response.data) > 0:
-        raise HTTPException(status_code=400, detail="Email already registered!")
-
-    # b. Privacy encryption (Story 9)
-    hashed_pwd = get_password_hash(user.password)
-
-    # c. Prepare data for Supabase insertion
-    new_user_data = {
-        "email": user.email,
-        "password_hash": hashed_pwd,  # Must match login query field
-        "username": user.username,
-        "phone_number": user.phone_number,
-        # Restore S10 & S11: assign default values
-        "role": schemas.UserRole.DONEE.value,
-        "status": schemas.UserStatus.PENDING.value
-    }
-
-    # d. Insert into Supabase database
-    insert_response = supabase.table("users").insert(new_user_data).execute()
-
-    if not insert_response.data:
-        raise HTTPException(status_code=500, detail="User creation failed, please check table structure")
-
-    return insert_response.data[0]
-
-
-# ===========================================
-# 5. Helper: Audit Log Generator (Story 12)
+# 4. Helper: Audit Log Generator (Story 12)
 # ===========================================
 def log_admin_action(admin_id: int, target_user_id: int, action: str, details: str = ""):
     log_data = {
@@ -256,7 +196,7 @@ def log_admin_action(admin_id: int, target_user_id: int, action: str, details: s
 
 
 # ===========================================
-# 6. Admin Feature: Suspend User and Log Action (Story 11 & Story 12)
+# 5. Admin Feature: Suspend User and Log Action (Story 11 & Story 12)
 # ===========================================
 @app.post("/admin/users/{target_user_id}/suspend")
 def suspend_user(target_user_id: int):
@@ -275,3 +215,29 @@ def suspend_user(target_user_id: int):
     )
 
     return {"message": "User successfully suspended and logged in audit logs"}
+
+
+# ===========================================
+# 6. [Supplementary] Administrator Function: Approving Users (Story 10)
+# ===========================================
+@app.post("/admin/users/{target_user_id}/approve")
+def approve_user(target_user_id: int):
+    # Change the status from pending to active
+    update_res = supabase.table("users").update({"status": "active"}).eq("user_id", target_user_id).execute()
+
+    if len(update_res.data) == 0:
+        raise HTTPException(status_code=404, detail="The user awaiting approval could not be found.")
+
+    # Record audit logs (Story 12)
+    log_admin_action(admin_id=1, target_user_id=target_user_id, action="APPROVE_USER", details="The administrator approved the user's application.")
+
+    return {"message": "User has been successfully activated."}
+
+# ===========================================
+# 7. [Supplementary] Administrator Function: View Audit Logs (Story 12)
+# ===========================================
+@app.get("/admin/audit-logs")
+def get_audit_logs():
+    # Read all operation records from Supabase
+    response = supabase.table("audit_logs").select("*").order("id", desc=True).execute()
+    return response.data
