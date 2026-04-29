@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import EmailStr, BaseModel
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Annotated
@@ -13,6 +14,13 @@ from database import supabase
 app = FastAPI(title="CSIT314 Backend - IAM Module (User Stories 1-12)")
 
 # ====================== Configuration ======================
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 允许所有前端端口访问（开发环境）
+    allow_credentials=True,
+    allow_methods=["*"],  # 允许 GET, POST, PATCH 等所有方法
+    allow_headers=["*"],  # 允许携带 Token 等所有请求头
+)
 SECRET_KEY = "CSIT314_2026_SUPER_SECRET_KEY_CHANGE_THIS_IN_PRODUCTION_!@#$"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60

@@ -1,26 +1,28 @@
-// US #2 + #3 — User Admin creates a new admin account & profile (with role + permissions).
-// Picking a role pre-checks its default permission set; the admin can then tweak permissions
-// individually before sending the invite. Submit appends a Pending user to usersData and
-// redirects to the user-management screen with a confirmation toast.
+// s6-create-admin.js - 连接后端 API 版本
+const API_BASE_URL = 'http://127.0.0.1:8000';
+const token = localStorage.getItem('fs_token') || sessionStorage.getItem('fs_token');
 
 const form = document.getElementById('createAdminForm');
 const firstNameInput = document.getElementById('firstName');
 const lastNameInput = document.getElementById('lastName');
 const workEmailInput = document.getElementById('workEmail');
-const employeeIdInput = document.getElementById('employeeId');
-const departmentInput = document.getElementById('department');
 const phoneInput = document.getElementById('phone');
 const submitBtn = document.getElementById('submitBtn');
 const formError = document.getElementById('formError');
 
-let selectedRole = 'User Admin';
+if (!token) window.location.href = 's1-login.html';
 
-// ---------- role card selection ----------
-function paintRoleSelection() {
-    document.querySelectorAll('.role-card').forEach(card => {
-        const isSelected = card.dataset.role === selectedRole;
-        card.className = `role-card bg-slate-800 ${isSelected ? 'border-blue-500' : 'border-slate-700'} border-2 rounded-xl p-4 cursor-pointer block`;
-        const radio = card.querySelector('.role-radio');
+// 角色 UI 选中逻辑 (保留你原本漂亮的前端效果)
+let selectedRole = 'User Admin';
+document.getElementById('roleGrid').addEventListener('click', (e) => {
+    const card = e.target.closest('.role-card');
+    if (!card) return;
+    selectedRole = card.dataset.role;
+    
+    document.querySelectorAll('.role-card').forEach(c => {
+        const isSelected = c.dataset.role === selectedRole;
+        c.className = `role-card bg-slate-800 ${isSelected ? 'border-blue-500' : 'border-slate-700'} border-2 rounded-xl p-4 cursor-pointer block`;
+        const radio = c.querySelector('.role-radio');
         if (isSelected) {
             radio.className = 'role-radio w-4 h-4 rounded-full border-2 border-blue-500 flex items-center justify-center';
             radio.innerHTML = '<span class="w-2 h-2 rounded-full bg-blue-500"></span>';
@@ -29,90 +31,65 @@ function paintRoleSelection() {
             radio.innerHTML = '';
         }
     });
-}
-
-function applyDefaultPermissions(role) {
-    const defaults = (window.FS.ADMIN_ROLE_DEFAULTS[role] || {}).defaultPermissions || [];
-    document.querySelectorAll('.perm-check').forEach(cb => {
-        cb.checked = defaults.includes(cb.dataset.perm);
-    });
-}
-
-document.getElementById('roleGrid').addEventListener('click', (e) => {
-    const card = e.target.closest('.role-card');
-    if (!card) return;
-    selectedRole = card.dataset.role;
-    paintRoleSelection();
-    applyDefaultPermissions(selectedRole);
 });
 
-paintRoleSelection();
-applyDefaultPermissions(selectedRole);
-
-// ---------- submit ----------
 function showError(msg) {
     formError.textContent = msg;
     formError.classList.remove('hidden');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-form.addEventListener('submit', (e) => {
+// 提交表单创建 Admin
+form.addEventListener('submit', async (e) => {
     e.preventDefault();
     formError.classList.add('hidden');
 
     const firstName = firstNameInput.value.trim();
     const lastName = lastNameInput.value.trim();
     const workEmail = workEmailInput.value.trim();
-    const employeeId = employeeIdInput.value.trim();
-    const department = departmentInput.value;
     const phone = phoneInput.value.trim();
 
-    if (!firstName || !lastName || !workEmail || !employeeId) {
-        showError('First name, last name, work email and employee ID are required.');
+    if (!firstName || !lastName || !workEmail) {
+        showError('First name, last name, and work email are required.');
         return;
     }
-    if (!workEmail.includes('@')) {
-        showError('Enter a valid work email.');
-        return;
-    }
-    if (usersData.some(u => u.email.toLowerCase() === workEmail.toLowerCase())) {
-        showError('Another account already uses that work email.');
-        return;
-    }
-
-    const permissions = Array.from(document.querySelectorAll('.perm-check'))
-        .filter(cb => cb.checked)
-        .map(cb => cb.dataset.perm);
-
-    const newId = usersData.reduce((max, u) => Math.max(max, u.user_id), 0) + 1;
-    const today = new Date().toISOString().slice(0, 10);
-
-    usersData.push({
-        user_id: newId,
-        username: `${firstName} ${lastName}`,
-        first_name: firstName,
-        last_name: lastName,
-        email: workEmail,
-        role_name: selectedRole,
-        status: 'Pending',  // becomes Active once they accept the invite + set a password
-        phone,
-        location: '',
-        date_of_birth: '',
-        bio: '',
-        member_since: today,
-        last_signin: '—',
-        last_active_at: null,
-        two_factor: false,
-        email_verified: false,
-        employee_id: employeeId,
-        department,
-        work_email: workEmail,
-        permissions
-    });
 
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span>✓</span> Invite sent';
-    setTimeout(() => {
-        window.location.href = 'index-UC57.html';
-    }, 600);
+    submitBtn.textContent = 'Creating...';
+
+    // 组合 username 和生成默认密码满足后端要求
+    const fullName = `${firstName} ${lastName}`;
+    const defaultPassword = "AdminTempPassword123!"; // 后端 schema 需要这个字段
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/create-admin`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: workEmail,
+                username: fullName,
+                password: defaultPassword,
+                phone_number: phone || undefined
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || 'Failed to create admin.');
+        }
+
+        submitBtn.innerHTML = '<span>✓</span> Admin Created';
+        setTimeout(() => {
+            window.location.href = 's7-search&filter-admin.html'; // 成功后跳回管理表格
+        }, 1000);
+
+    } catch (err) {
+        showError(err.message);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>✉</span> Create admin & send invite';
+    }
 });
