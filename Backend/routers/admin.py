@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import schemas
 from database import supabase
 from dependencies import get_current_admin
-# 注意：你需要从 auth 里面借用 hash 密码的函数，或者简单复制一份
+# Note: Here you need to borrow the hash password function from auth, or simply copy it.
 from routers.auth import get_password_hash
 
 router = APIRouter(prefix="/admin", tags=["Sprint 1 - Admin Features"])
