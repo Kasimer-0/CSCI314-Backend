@@ -11,7 +11,7 @@ from dependencies import get_current_user, SECRET_KEY, ALGORITHM, ACCESS_TOKEN_E
 
 router = APIRouter(tags=["Auth & Profile"])
 
-# 工具函数
+# utility functions
 def get_password_hash(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
