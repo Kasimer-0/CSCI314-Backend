@@ -5,15 +5,15 @@ from datetime import datetime, timezone
 
 import schemas
 from database import supabase
-from dependencies import get_current_fundraiser # 引入刚才写好的鉴权函数
+from dependencies import get_current_fundraiser # Introduce the authentication function we just wrote
 
-# 创建 Router 实例，自动加上前缀和分类标签
+# Create Router instances and automatically add prefixes and category tags.
 router = APIRouter(
     prefix="/fundraiser/activities",
     tags=["Sprint 2 - Fundraiser Activities"]
 )
 
-# 注意：这里的路径直接写 "/" 即可，因为 Router 已经加了前缀
+# Note: The path here is just "/" since the Router already has the prefix
 @router.post("/", response_model=schemas.ActivityResponse)
 def create_activity(activity: schemas.ActivityCreate, current_user: dict = Depends(get_current_fundraiser)):
     new_activity = {
