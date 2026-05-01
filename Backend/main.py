@@ -1,13 +1,12 @@
-# main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# 导入我们拆分好的各个业务模块
+# Import the various business modules that have been split up
 from routers import auth, admin, fundraiser, donee
 
 app = FastAPI(title="CSIT314 Backend - Fully Refactored")
 
-# CORS 配置
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 挂载所有的 Routers
+# Mount all Routers
 app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(fundraiser.router)
