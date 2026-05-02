@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard · Fundraising System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#F8FAFC] min-h-screen text-slate-800 font-inter">
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar (matches s6) -->
+        <aside class="w-64 bg-slate-900 text-slate-200 flex flex-col">
+            <div class="px-6 py-6 border-b border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">F</div>
+                    <div>
+                        <div class="text-sm font-bold text-white">Fundraising System</div>
+                        <div class="text-xs text-slate-400">Admin Console</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="px-3 py-5 space-y-1 text-sm">
+                <p class="px-3 text-[11px] uppercase tracking-wider text-slate-500 font-bold mb-2">Main</p>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-600 text-white font-semibold" href="s7-admin-dash.html"><span>📊</span> Dashboard</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="index-UC57.html"><span>👥</span> Users</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="uc60.html"><span>📝</span> Registrations</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>📈</span> Activities</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>🏷</span> Categories</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>📑</span> Reports</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="uc62.html"><span>🗂</span> Audit Logs</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>⚙️</span> Settings</a>
+            </nav>
+            <div class="mt-auto px-3 py-4 border-t border-slate-800">
+                <button id="logoutTrigger" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-slate-800 text-slate-300">
+                    <span>↩</span> Sign out
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 px-8 py-8">
+            <!-- Top bar -->
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Admin Dashboard</h1>
+                    <p class="text-slate-500 mt-1.5 text-sm" id="welcomeLine">Overview of accounts, registrations, and audit activity.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="text-slate-400 hover:text-slate-700">🔔</button>
+                    <div id="navAvatar" class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">JC</div>
+                </div>
+            </div>
+
+            <!-- KPI tiles -->
+            <section class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="bg-white rounded-2xl border border-slate-200 p-5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-500 font-medium">Total accounts</span>
+                        <span class="w-7 h-7 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-sm">👥</span>
+                    </div>
+                    <p id="kpiTotal" class="text-2xl font-bold text-slate-900 mt-3">0</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 p-5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-500 font-medium">Active</span>
+                        <span class="w-7 h-7 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-sm">●</span>
+                    </div>
+                    <p id="kpiActive" class="text-2xl font-bold text-slate-900 mt-3">0</p>
+                </div>
+                <a href="uc60.html" class="bg-white rounded-2xl border border-slate-200 p-5 hover:border-amber-300 hover:bg-amber-50/30 transition block">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-500 font-medium">Pending registrations</span>
+                        <span class="w-7 h-7 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-sm">⏳</span>
+                    </div>
+                    <p id="kpiPending" class="text-2xl font-bold text-slate-900 mt-3">0</p>
+                    <p class="text-[11px] text-amber-700 font-semibold mt-1">Review →</p>
+                </a>
+                <div class="bg-white rounded-2xl border border-slate-200 p-5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-500 font-medium">Suspended</span>
+                        <span class="w-7 h-7 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center text-sm">⊘</span>
+                    </div>
+                    <p id="kpiSuspended" class="text-2xl font-bold text-slate-900 mt-3">0</p>
+                </div>
+                <a href="uc62.html" class="bg-white rounded-2xl border border-slate-200 p-5 hover:border-violet-300 hover:bg-violet-50/30 transition block">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-500 font-medium">Audit events</span>
+                        <span class="w-7 h-7 bg-violet-50 text-violet-600 rounded-lg flex items-center justify-center text-sm">🗂</span>
+                    </div>
+                    <p id="kpiAudit" class="text-2xl font-bold text-slate-900 mt-3">0</p>
+                    <p class="text-[11px] text-violet-700 font-semibold mt-1">Open log →</p>
+                </a>
+            </section>
+
+            <!-- Two-column body -->
+            <section class="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6 mt-6">
+                <!-- Pending registrations -->
+                <article class="bg-white rounded-2xl border border-slate-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-base font-bold text-slate-900">Pending registrations</h2>
+                        <a href="uc60.html" class="text-sm text-blue-600 font-semibold hover:underline">View all →</a>
+                    </div>
+                    <ul id="pendingList" class="divide-y divide-slate-100"></ul>
+                    <p id="pendingEmpty" class="hidden text-sm text-slate-500 text-center py-8">All caught up — no pending registrations.</p>
+                </article>
+
+                <!-- Quick actions + role mix -->
+                <aside class="space-y-4">
+                    <article class="bg-white rounded-2xl border border-slate-200 p-6">
+                        <h2 class="text-base font-bold text-slate-900 mb-3">Quick actions</h2>
+                        <div class="space-y-2">
+                            <a href="s6-create-admin.html" class="flex items-center justify-between bg-slate-50 hover:bg-slate-100 rounded-xl px-4 py-3 transition">
+                                <span class="text-sm font-semibold text-slate-800">Create admin profile</span>
+                                <span class="text-slate-400">→</span>
+                            </a>
+                            <a href="index-UC57.html" class="flex items-center justify-between bg-slate-50 hover:bg-slate-100 rounded-xl px-4 py-3 transition">
+                                <span class="text-sm font-semibold text-slate-800">Manage user accounts</span>
+                                <span class="text-slate-400">→</span>
+                            </a>
+                            <a href="uc62.html" class="flex items-center justify-between bg-slate-50 hover:bg-slate-100 rounded-xl px-4 py-3 transition">
+                                <span class="text-sm font-semibold text-slate-800">Review audit logs</span>
+                                <span class="text-slate-400">→</span>
+                            </a>
+                        </div>
+                    </article>
+
+                    <article class="bg-white rounded-2xl border border-slate-200 p-6">
+                        <h2 class="text-base font-bold text-slate-900 mb-3">Role mix</h2>
+                        <ul id="roleMix" class="space-y-2 text-sm"></ul>
+                    </article>
+                </aside>
+            </section>
+
+            <!-- Recent audit -->
+            <section class="bg-white rounded-2xl border border-slate-200 p-6 mt-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-slate-900">Recent audit activity</h2>
+                    <a href="uc62.html" class="text-sm text-blue-600 font-semibold hover:underline">Open audit log →</a>
+                </div>
+                <ul id="auditList" class="divide-y divide-slate-100"></ul>
+                <p id="auditEmpty" class="hidden text-sm text-slate-500 text-center py-8">No audit events recorded yet.</p>
+            </section>
+        </main>
+    </div>
+
+    <!-- Logout modal -->
+    <div id="logoutModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md px-8 py-8 text-center">
+            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H5a3 3 0 01-3-3V8a3 3 0 013-3h5a3 3 0 013 3v1"/></svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">Sign out of Fundraising System?</h3>
+            <p class="text-sm text-slate-500 mt-2">You'll need to sign in again to access your account.</p>
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button id="logoutCancel" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">Cancel</button>
+                <button id="logoutConfirm" class="px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 rounded-xl hover:bg-rose-700">Sign out</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="logout.js"></script>
+    <script src="s7-admin-dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S21 - Filter Activities (Donee)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#F8FAFC] min-h-screen text-slate-800 flex flex-col font-inter relative">
+
+    <!-- 顶部导航 (Donee 视角) -->
+    <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-20">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
+            <span class="text-lg font-bold text-slate-900">Fundraising System</span>
+            <span class="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-md font-bold ml-2">Donee Portal</span>
+        </div>
+        <button class="bg-[#CC0000] text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-red-700 transition">Logout</button>
+    </header>
+
+    <main class="w-full max-w-6xl mx-auto px-6 py-10 flex-grow">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Browse Activities</h1>
+            <p class="text-slate-500 mt-2 text-sm">Discover relevant projects by filtering through specific categories.</p>
+        </div>
+
+        <!-- Normal Flow 1, 2, 3: Category Filter Panel -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 sticky top-24 z-10 flex gap-4 items-end">
+            <div class="w-full md:w-64">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Category Filter</label>
+                <!-- Normal Flow 4: dropdown triggers search (auto-submits) -->
+                <select id="categoryFilter" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 bg-white cursor-pointer transition shadow-sm">
+                    <option value="all">All Categories</option>
+                    <option value="Education">Education</option>
+                    <option value="Medical">Medical</option>
+                    <option value="Disaster Relief">Disaster Relief</option>
+                    <!-- 用来专门给老师演示 Alternative Flow 2 的炸弹开关 -->
+                    <option value="NetworkErrorTest" class="text-rose-600 font-bold">⚠️ Simulate Network Error</option>
+                </select>
+            </div>
+
+            <!-- Sub-Flow 1a: Clear Filter Button -->
+            <button id="clearFilterBtn" class="bg-slate-50 text-slate-600 px-6 py-3 text-sm rounded-xl font-bold border border-slate-200 hover:bg-slate-100 transition shadow-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h16v2H4zM4 10h16v2H4zM4 16h8v2H4z"></path></svg>
+                Clear Filter
+            </button>
+        </div>
+
+        <!-- 活动卡片展示区 (Normal Flow 6) -->
+        <div id="activitiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- JS 将动态塞入卡片 -->
+        </div>
+
+        <!-- Sub-Flow 1b: Pagination Loading Indicator (一直滑到底部出现的加载动画) -->
+        <div id="loadingIndicator" class="hidden py-10 flex flex-col items-center justify-center">
+            <div class="w-8 h-8 border-4 border-slate-200 border-t-emerald-600 rounded-full animate-spin mb-3"></div>
+            <p class="text-sm font-semibold text-slate-500">Loading next batch of activities...</p>
+        </div>
+
+        <!-- Alternative Flow 1: Zero Items Found Message -->
+        <div id="emptyStateMsg" class="hidden py-20 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 border-dashed">
+            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            </div>
+            <p class="text-slate-600 text-base font-bold">No relevant projects found in this category at the moment.</p>
+        </div>
+
+    </main>
+
+    <!-- Alternative Flow 2: Network Error Toast -->
+    <div id="networkErrorToast" class="hidden fixed bottom-5 right-5 left-5 md:left-auto bg-slate-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 transition-all">
+        <svg class="w-6 h-6 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span class="text-sm font-bold">Failed to apply filter due to network connection, please try again.</span>
+    </div>
+
+    <!-- 连接对应的 JS -->
+    <script src="s21-filter-activities-donee.js"></script>
+</body>
+</html>

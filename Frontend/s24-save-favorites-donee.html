@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S24 - Save to Favorites (Donee)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#F8FAFC] min-h-screen text-slate-800 flex flex-col font-inter relative">
+
+    <!-- 顶部导航 -->
+    <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
+            <span class="text-lg font-bold text-slate-900">Fundraising System</span>
+            <span class="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-md font-bold ml-2">Donee Portal</span>
+        </div>
+        <div class="flex gap-4 items-center">
+            <!-- 收藏夹入口入口展示 -->
+            <button class="text-slate-500 hover:text-rose-500 transition flex items-center gap-1.5 font-semibold text-sm mr-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                My Favorites (<span id="favCount">0</span>)
+            </button>
+            <button class="bg-[#CC0000] text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-red-700 transition">Logout</button>
+        </div>
+    </header>
+
+    <main class="w-full max-w-6xl mx-auto px-6 py-10 flex-grow">
+        
+        <div class="mb-4">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Discover Activities</h1>
+            <p class="text-slate-500 mt-2 text-sm">Save causes to your private favorites list. <span class="text-emerald-600 font-semibold inline-flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg> Your identity remains 100% hidden.</span></p>
+        </div>
+
+        <div class="border-b border-slate-200 mb-8 pb-4">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Test Instructions: Cards 1-3 (Normal), Card 4 (Session Expired), Card 5 (Network Error)</p>
+        </div>
+
+        <!-- 卡片列表 (Sub-Flow 1a: High-level list view) -->
+        <div id="activitiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- JS Injection -->
+        </div>
+
+    </main>
+
+    <!-- ======================================================== -->
+    <!-- Sub-Flow 1a: Detail Page Modal (Omnichannel Saving) -->
+    <!-- ======================================================== -->
+    <div id="detailModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-200" id="detailModalPane">
+            <!-- Modal Cover Image & Heart -->
+            <div class="h-48 bg-slate-50 relative flex items-center justify-center text-7xl border-b border-slate-100" id="detailImg">
+                <!-- Data injected by JS -->
+                <button id="modalHeartBtn" class="absolute top-4 right-4 p-3 bg-white/80 backdrop-blur rounded-full shadow hover:bg-rose-50 hover:scale-110 transition cursor-pointer group z-10 text-slate-400">
+                    <svg class="w-6 h-6 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                </button>
+            </div>
+            
+            <div class="p-8">
+                <span id="detailCat" class="bg-emerald-50 text-emerald-700 text-xs uppercase font-bold px-2.5 py-1 rounded inline-block mb-3"></span>
+                <h2 id="detailTitle" class="text-2xl font-bold text-slate-900 mb-2"></h2>
+                <p id="detailDesc" class="text-sm text-slate-600 leading-relaxed mb-6"></p>
+                
+                <div class="bg-slate-50 p-4 rounded-xl mb-6 flex justify-between items-center border border-slate-100">
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Current Raised</p>
+                        <p class="text-xl font-black text-emerald-600" id="detailRaised"></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Target Goal</p>
+                        <p class="text-xl font-black text-slate-700" id="detailGoal"></p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center text-xs text-slate-400 bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
+                    <span class="flex items-center gap-1.5 font-semibold text-emerald-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        Privacy Shield Active: Interactions are anonymous.
+                    </span>
+                    <span><span id="anonSaves">234</span> anonymous saves</span>
+                </div>
+            </div>
+
+            <div class="px-8 py-4 bg-slate-50 border-t border-slate-100 text-right">
+                <button id="closeModalBtn" class="px-6 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-100 transition shadow-sm">Close Window</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- Alerts & Notifications (All Flow Coverage) -->
+    <!-- ======================================================== -->
+
+    <!-- Normal/Privacy Success Toast (Post-Condition 2) -->
+    <div id="privacySuccessToast" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50 border border-slate-700">
+        <div class="bg-rose-500/20 p-2 rounded-full">
+            <svg class="w-5 h-5 text-rose-500 bg-transparent fill-current" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+        </div>
+        <div>
+            <p class="text-sm font-bold">Saved to your Favorites.</p>
+            <p class="text-[11px] text-slate-400 font-medium">Fundraisers will not see your identity.</p>
+        </div>
+    </div>
+
+    <!-- Alternative Flow 1: Session Expired Modal -->
+    <div id="sessionModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-8">
+            <div class="w-16 h-16 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-2">Session Expired</h3>
+            <p class="text-sm text-slate-500 mb-6 leading-relaxed">Your session token has timed out. Please log in again to manage your private favorites.</p>
+            <button onclick="document.getElementById('sessionModal').classList.add('hidden')" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition">Go to Login</button>
+        </div>
+    </div>
+
+    <!-- Alternative Flow 2: Network / Database Failure Toast -->
+    <div id="networkErrorToast" class="hidden fixed bottom-5 right-5 bg-rose-600 text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 border border-rose-700">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span class="text-sm font-semibold leading-tight pr-2">Failed to save to favorites due to network issues. Please try again.</span>
+    </div>
+
+    <script src="s24-save-favorites-donee.js"></script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit campaign · Fundraising System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#F8FAFC] min-h-screen text-slate-800 font-inter">
+
+    <header class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-8">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">F</div>
+                <span class="text-base font-bold text-slate-900">Fundraising System</span>
+            </div>
+            <nav class="hidden md:flex gap-6 text-sm text-slate-600 font-medium">
+                <a href="s2-donee-dash.html" class="hover:text-slate-900">Discover</a>
+                <span class="text-blue-600 font-semibold">My Activities</span>
+                <a href="#" class="hover:text-slate-900">History</a>
+                <a id="navProfile" href="#" class="hover:text-slate-900">Profile</a>
+            </nav>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="text-slate-400 hover:text-slate-700">🔔</button>
+            <button id="logoutTrigger" class="w-9 h-9 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-xs" aria-label="Sign out">MS</button>
+        </div>
+    </header>
+
+    <main class="w-full max-w-6xl mx-auto px-6 py-10">
+        <p class="text-sm text-slate-500"><a href="s13-my-activities.html" class="hover:text-blue-600">My Activities</a> <span class="mx-1.5 text-slate-400">/</span> <span class="text-slate-900 font-semibold">Edit Campaign</span></p>
+        <h1 class="text-3xl font-bold text-slate-900 tracking-tight mt-1">Edit campaign</h1>
+        <p class="text-slate-500 mt-2 text-sm" id="pageSubtitle">Update details and timeline for this active campaign</p>
+
+        <!-- Editing context bar -->
+        <div id="contextBar" class="hidden mt-5 bg-blue-50/70 border border-blue-100 rounded-2xl p-4 flex items-center justify-between gap-4">
+            <div class="flex items-start gap-3">
+                <span class="w-9 h-9 bg-white text-blue-600 rounded-lg flex items-center justify-center border border-blue-200">✏</span>
+                <div>
+                    <p class="text-sm"><span class="text-blue-700 font-semibold" id="ctxTitle">Editing:</span> <span id="ctxStatus" class="ml-1 text-blue-600">·</span></p>
+                    <p class="text-xs text-slate-500 mt-0.5" id="ctxMeta"></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a id="visibilityLink" href="#" class="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 flex items-center gap-1"><span>👁</span> Visibility</a>
+                <button id="closeCampaignBtn" class="hidden bg-white border border-amber-300 text-amber-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-amber-50 flex items-center gap-1"><span>⚑</span> Close campaign</button>
+                <a id="viewPublicLink" href="#" class="bg-white border border-blue-200 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100/40 flex items-center gap-1"><span>↗</span> View public page</a>
+            </div>
+        </div>
+
+        <div id="errorBox" class="hidden mt-5 bg-rose-50 text-rose-700 text-sm p-3 rounded-xl border border-rose-100"></div>
+        <div id="notFoundBox" class="hidden mt-5 bg-amber-50 text-amber-700 text-sm p-4 rounded-xl border border-amber-100"></div>
+
+        <div id="formArea" class="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 mt-6">
+            <form id="campaignForm" class="bg-white rounded-2xl border border-slate-200 p-7" novalidate>
+                <section>
+                    <h2 class="text-base font-bold text-slate-900">Basics</h2>
+                    <p class="text-sm text-slate-500 mt-0.5 mb-5">What is your campaign about?</p>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Campaign title</label>
+                            <input id="title" type="text" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Short tagline</label>
+                            <input id="tagline" type="text" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Full description</label>
+                            <div class="border border-slate-300 rounded-xl overflow-hidden">
+                                <div class="bg-slate-50 px-3 py-1.5 text-slate-500 text-xs flex gap-3 border-b border-slate-200">
+                                    <span class="font-bold cursor-default">B</span>
+                                    <span class="italic cursor-default">I</span>
+                                    <span class="cursor-default">🔗</span>
+                                    <span class="cursor-default">≡</span>
+                                    <span class="cursor-default">🖼</span>
+                                </div>
+                                <textarea id="description" rows="5" class="w-full px-4 py-3 text-sm outline-none resize-none"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <hr class="border-slate-100 my-7">
+
+                <section>
+                    <h2 class="text-base font-bold text-slate-900">Goal &amp; timeline</h2>
+                    <p class="text-sm text-slate-500 mt-0.5 mb-5">How much do you need to raise, and by when?</p>
+                    <div class="grid grid-cols-1 md:grid-cols-[1fr_140px] gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Target amount</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-2.5 text-slate-400">$</span>
+                                <input id="target" type="number" min="100" step="100" class="w-full border border-slate-300 rounded-xl pl-8 pr-9 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                                <span class="absolute right-3 top-2.5 text-slate-400 text-sm" title="Locked once supporters have donated">🔒</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Currency</label>
+                            <select id="currency" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white">
+                                <option>USD</option><option>EUR</option><option>GBP</option><option>SGD</option><option>PHP</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Start date</label>
+                            <input id="startDate" type="date" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">End date</label>
+                            <input id="endDate" type="date" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                        </div>
+                    </div>
+                </section>
+
+                <hr class="border-slate-100 my-7">
+
+                <section>
+                    <h2 class="text-base font-bold text-slate-900">Category &amp; visuals</h2>
+                    <p class="text-sm text-slate-500 mt-0.5 mb-5">Help donors find your campaign and make it visually engaging</p>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Category</label>
+                        <select id="category" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white">
+                            <option>Education</option>
+                            <option>Disaster Relief</option>
+                            <option>Healthcare</option>
+                            <option>Animals</option>
+                            <option>Environment</option>
+                            <option>Community</option>
+                        </select>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Cover image</label>
+                        <button id="coverDrop" type="button" class="w-full border-2 border-dashed border-slate-200 rounded-xl py-10 flex flex-col items-center text-center hover:border-blue-300 hover:bg-blue-50/30 transition">
+                            <span class="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-2">⬆</span>
+                            <p class="text-sm font-semibold text-slate-700">Drag &amp; drop or click to upload</p>
+                            <p class="text-xs text-slate-500 mt-1">PNG, JPG up to 5MB · Recommended 1200×630</p>
+                        </button>
+                    </div>
+                </section>
+
+                <div class="mt-7 flex justify-end gap-3">
+                    <button id="discardBtn" type="button" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">Discard changes</button>
+                    <button id="saveBtn" type="submit" class="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-sm flex items-center gap-2"><span>✓</span> Save changes</button>
+                </div>
+            </form>
+
+            <aside class="self-start xl:sticky xl:top-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-semibold text-slate-700">Preview</span>
+                    <a href="#" class="text-xs text-slate-500 font-medium hover:text-slate-700 flex items-center gap-1"><span>👁</span> Donee view</a>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                    <div id="previewCover" class="bg-blue-100 h-44 flex items-center justify-center text-blue-300 text-5xl">🖼</div>
+                    <div class="p-5">
+                        <span id="previewCategory" class="inline-flex w-fit px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-700">Education</span>
+                        <h3 id="previewTitle" class="text-base font-bold text-slate-900 mt-3 leading-snug"></h3>
+                        <p id="previewTagline" class="text-sm text-slate-500 mt-1.5"></p>
+                        <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mt-4">
+                            <div id="previewProgress" class="bg-blue-600 h-full rounded-full" style="width:0%"></div>
+                        </div>
+                        <p id="previewMeta" class="text-xs text-slate-500 mt-2"></p>
+                        <button class="mt-4 w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700">♡ Support this campaign</button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-3">Updates live as you fill in the form on the left.</p>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Close Campaign modal (screen 17) -->
+    <div id="closeModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-7 text-center">
+            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">⚑</div>
+            <h3 class="text-xl font-bold text-slate-900">Close this campaign?</h3>
+            <p id="closeBody" class="text-sm text-slate-500 mt-2"></p>
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-4 flex items-start gap-2 text-left">
+                <span class="text-amber-600 mt-0.5">⚠</span>
+                <p class="text-xs text-amber-800">Closing the campaign will stop accepting new donations. This action cannot be undone.</p>
+            </div>
+            <label class="flex items-center gap-2 text-sm text-slate-700 mt-4 justify-start">
+                <input type="checkbox" id="thankCheck" checked class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                Send a thank-you email to all supporters
+            </label>
+            <div class="grid grid-cols-2 gap-3 mt-5">
+                <button id="closeCancel" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">Cancel</button>
+                <button id="closeConfirm" class="px-5 py-2.5 text-sm font-semibold text-white bg-amber-600 rounded-xl hover:bg-amber-700 flex items-center justify-center gap-1">⚑ Close campaign</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout modal -->
+    <div id="logoutModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md px-8 py-8 text-center">
+            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H5a3 3 0 01-3-3V8a3 3 0 013-3h5a3 3 0 013 3v1"/></svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">Sign out of Fundraising System?</h3>
+            <p class="text-sm text-slate-500 mt-2">You'll need to sign in again to access your account.</p>
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button id="logoutCancel" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">Cancel</button>
+                <button id="logoutConfirm" class="px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 rounded-xl hover:bg-rose-700">Sign out</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="logout.js"></script>
+    <script src="s16-edit-campaign.js"></script>
+</body>
+</html>

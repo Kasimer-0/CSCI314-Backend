@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S23 - Advanced Sort & Filter (Donee)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#F8FAFC] min-h-screen text-slate-800 flex flex-col font-inter relative">
+
+    <!-- 顶部导航 -->
+    <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
+            <span class="text-lg font-bold text-slate-900">Fundraising System</span>
+            <span class="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-md font-bold ml-2">Donee Portal</span>
+        </div>
+        <button class="bg-[#CC0000] text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-red-700 transition">Logout</button>
+    </header>
+
+    <main class="w-full max-w-6xl mx-auto px-6 py-10 flex-grow">
+        
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Explore Causes</h1>
+            <p class="text-slate-500 mt-2 text-sm">Sort activities by date or urgency to discover projects that need your help the most.</p>
+        </div>
+
+        <!-- UC 23: Advanced Command Center (Search + Filter + Sort) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-8 sticky top-24 z-20 flex flex-col lg:flex-row gap-4 items-center">
+            
+            <!-- (Inherited) Keyword Search -->
+            <div class="relative w-full lg:flex-1">
+                <svg class="w-5 h-5 text-slate-400 absolute left-4 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="searchInput" placeholder="Search keywords..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:bg-white transition">
+            </div>
+
+            <!-- (Inherited) Category Filter -->
+            <div class="w-full lg:w-48 relative">
+                 <select id="categoryFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:bg-white appearance-none cursor-pointer transition focus:ring-0">
+                    <option value="all">All Categories</option>
+                    <option value="Education">Education</option>
+                    <option value="Medical">Medical</option>
+                    <option value="Disaster Relief">Disaster Relief</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+
+            <!-- Vertical Divider -->
+            <div class="hidden lg:block w-px h-8 bg-slate-200 mx-2"></div>
+
+            <!-- Normal Flow 1 & 2: "Sort By" Dropdown -->
+            <div class="w-full lg:w-64 relative">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+                </div>
+                <select id="sortFilter" class="w-full border-2 border-emerald-100 bg-emerald-50/50 rounded-xl pl-9 pr-8 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 cursor-pointer font-bold text-slate-700 transition appearance-none">
+                    <option value="default">Default Match</option>
+                    <option value="newest">Newest First</option>
+                    <option value="ending">Ending Soon</option>
+                    <option value="urgency">Urgency (Remaining Amount)</option>
+                    <option value="errorMock" class="text-rose-500">⚠ Data Sync Delay (Test)</option>
+                </select>
+                <!-- Custom minimal arrow -->
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-emerald-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Post-Condition 1: Displays sorted and reordered list -->
+        <div id="activitiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- JS Injection -->
+        </div>
+
+        <!-- Sub-Flow 1b: Paginated scroll loading spinner -->
+        <div id="loadingIndicator" class="hidden py-10 flex flex-col items-center justify-center">
+            <div class="w-8 h-8 border-4 border-slate-200 border-t-emerald-600 rounded-full animate-spin mb-3"></div>
+            <p class="text-sm font-semibold text-slate-500">Calculating and fetching sorting data...</p>
+        </div>
+
+        <!-- No Results Fallback -->
+        <div id="emptyStateMsg" class="hidden py-24 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 border-dashed">
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-5">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            </div>
+            <p class="text-slate-600 text-sm font-bold">No causes match the current composite filters.</p>
+        </div>
+
+    </main>
+
+    <!-- Alternative Flow 2: Data Sync Delay Error -->
+    <div id="syncErrorToast" class="hidden fixed bottom-5 right-5 left-5 md:left-auto bg-rose-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 transition-all border border-rose-700">
+        <svg class="w-6 h-6 flex-shrink-0 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span class="text-sm font-bold leading-tight">Unable to sort right now, fetching latest data...</span>
+    </div>
+
+    <script src="s23-sort-activities-donee.js"></script>
+</body>
+</html>

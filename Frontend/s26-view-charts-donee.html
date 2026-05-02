@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S26 - Platform Insights (Donee)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Pre-Condition 3: Integrate 3rd party native charting library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#F8FAFC] min-h-screen text-slate-800 flex flex-col font-inter relative">
+
+    <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-30 shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
+            <span class="text-lg font-bold text-slate-900">Fundraising System</span>
+            <span class="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-md font-bold ml-2">Donee Portal</span>
+        </div>
+        <div class="flex gap-6 items-center">
+            <a href="#" class="text-slate-500 hover:text-emerald-600 font-semibold text-sm transition">Browse</a>
+            <a href="#" class="text-slate-500 hover:text-emerald-600 font-semibold text-sm transition">Favorites</a>
+            <!-- Normal Flow 1: 位于 "Platform Trends" 或 "Insights" 标签 -->
+            <button class="text-indigo-600 font-bold text-sm bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100">Platform Insights</button>
+            <button class="bg-[#CC0000] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-red-700 transition">Logout</button>
+        </div>
+    </header>
+
+    <main class="w-full max-w-5xl mx-auto px-6 py-10 flex-grow">
+        
+        <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Category Popularity & Trends</h1>
+                <p class="text-slate-500 mt-2 text-sm">Understand where platform focus and urgent social needs lie.</p>
+            </div>
+            
+            <!-- Sub-Flow 1b: Timeframe Filter -->
+            <div class="w-full md:w-64">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Filter by Timeframe</label>
+                <select id="timeframeFilter" class="w-full border-2 border-indigo-100 bg-indigo-50/50 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 cursor-pointer text-slate-700 transition">
+                    <option value="allTime">All Time Data</option>
+                    <option value="last30Days">Last 30 Days</option>
+                    <option value="last7Days">Last 7 Days</option>
+                    <hr>
+                    <option value="emptyTest" class="text-rose-500 font-bold">⚠️ Test: Insufficient Data</option>
+                    <option value="errorTest" class="text-rose-500 font-bold">⚠️ Test: Server Timeout</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 核心图表卡片区域 -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 min-h-[450px] flex flex-col relative overflow-hidden">
+            
+            <h2 class="text-lg font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Social Focus Distribution</h2>
+
+            <!-- Loading Spinner (Waiting for backend math aggregation) -->
+            <div id="loadingOverlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center hidden">
+                <div class="w-10 h-10 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                <p class="text-sm font-bold text-slate-600">Aggregating database categories...</p>
+            </div>
+
+            <!-- Normal Flow 5: The Chart.js Canvas -->
+            <div id="chartContainer" class="flex-grow flex items-center justify-center relative w-full h-[350px]">
+                <canvas id="popularityChart"></canvas>
+            </div>
+
+            <!-- Alternative Flow 1: Insufficient Data Collection -->
+            <div id="emptyStateBox" class="hidden absolute inset-0 bg-white z-20 flex flex-col items-center justify-center p-6 text-center">
+                <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-4 border border-slate-100">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                </div>
+                <p class="text-slate-800 text-lg font-bold mb-2">Not enough data available</p>
+                <p class="text-slate-500 text-sm">Not enough data available to generate trends at this moment. Check back later!</p>
+            </div>
+
+            <!-- Alternative Flow 2: Aggregation Timeout / Server Overload -->
+            <div id="errorStateBox" class="hidden absolute inset-0 bg-white z-20 flex flex-col items-center justify-center p-6 text-center">
+                <div class="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center text-rose-400 mb-4 border border-rose-100">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <p class="text-slate-800 text-lg font-bold mb-2">Aggregation Timeout</p>
+                <p class="text-slate-500 text-sm">Unable to load statistical charts due to high server traffic. Please refresh the page.</p>
+                <button onclick="window.location.reload()" class="mt-6 px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-md hover:bg-slate-800">Refresh Page</button>
+            </div>
+            
+        </div>
+    </main>
+
+    <script src="s26-view-charts-donee.js"></script>
+</body>
+</html>
