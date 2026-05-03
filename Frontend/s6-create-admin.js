@@ -84,7 +84,8 @@ form.addEventListener('submit', async (e) => {
 
         submitBtn.innerHTML = '<span>✓</span> Admin Created';
         setTimeout(() => {
-            window.location.href = 's7-search&filter-admin.html'; // 成功后跳回管理表格
+            // 修改这里，创建成功后返回 Dashboard
+            window.location.href = 's7-admin-dashboard.html'; 
         }, 1000);
 
     } catch (err) {

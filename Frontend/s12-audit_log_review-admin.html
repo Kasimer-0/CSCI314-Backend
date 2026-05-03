@@ -3,93 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UC 62 - Audit Logs</title>
+    <title>Audit Logs · Admin Console</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#F8FAFC] min-h-screen text-slate-800 flex flex-col font-inter">
+<body class="bg-[#F8FAFC] min-h-screen text-slate-800 font-inter">
 
-    <!-- Header -->
-    <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
-            <span class="text-lg font-bold text-slate-900">Fundraising System</span>
-            <span class="bg-purple-100 text-purple-700 text-xs px-2.5 py-1 rounded-md font-bold ml-2 tracking-wider">UC #62</span>
-        </div>
-        <button class="bg-[#CC0000] text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-red-700 transition">Logout</button>
-    </header>
+    <div class="flex min-h-screen">
+        <!-- 统一的 Admin 侧边栏 -->
+        <aside class="w-64 bg-slate-900 text-slate-200 flex flex-col fixed h-full z-20">
+            <div class="px-6 py-6 border-b border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
+                    <div>
+                        <div class="text-sm font-bold text-white">Fundraising System</div>
+                        <div class="text-xs text-slate-400">Admin Console</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="px-3 py-5 space-y-1 text-sm overflow-y-auto">
+                <p class="px-3 text-[11px] uppercase tracking-wider text-slate-500 font-bold mb-2">Main</p>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="s7-admin-dashboard.html"><span>📊</span> Dashboard</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="s7-search&filter-admin.html"><span>👥</span> Users</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="s10-role_assignment-admin.html"><span>📝</span> Registrations</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>📈</span> Activities</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>🏷</span> Categories</a>
+                
+                <p class="px-3 mt-6 mb-2 text-[11px] uppercase tracking-wider text-slate-500 font-bold">System</p>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="s6-create-admin.html"><span>🛡️</span> System Admins</a>
+                <!-- Audit Logs 高亮 -->
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-600 text-white font-semibold" href="s12-audit_log_review-admin.html"><span>🗂</span> Audit Logs</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>⚙️</span> Settings</a>
+            </nav>
+            <div class="mt-auto px-3 py-4 border-t border-slate-800">
+                <button id="logoutTrigger" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-slate-800 text-slate-300">
+                    <span>↩</span> Sign out
+                </button>
+            </div>
+        </aside>
 
-    <main class="w-full max-w-6xl mx-auto px-6 py-10">
-        
-        <!-- Headers (Normal Flow 1) -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Operation Logs Review</h1>
-            <p class="text-slate-500 mt-2 text-sm">Review objective evidence and operation history for suspicious or banned users.</p>
-        </div>
-
-        <!-- UC 62 Normal Flow 2 & Sub Flow 1: Search & Multi-Filter Controls -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col lg:flex-row gap-4 items-end">
+        <!-- 右侧主内容区 (加入了 ml-64 为侧边栏留出空间) -->
+        <main class="flex-1 ml-64 px-8 py-8 relative">
             
-            <!-- Target User Search -->
-            <div class="flex-1 w-full relative">
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Search Target User</label>
-                <div class="relative">
-                    <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="text" id="logSearchInput" placeholder="Enter username or email..." class="w-full border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition">
+            <!-- 统一的顶部栏 -->
+            <div class="flex items-center justify-between mb-6">
+                <div class="text-sm text-slate-500">
+                    <span class="text-slate-900 font-semibold">Audit Logs</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="text-slate-400 hover:text-slate-700">🔔</button>
+                    <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs" id="navAvatar">AD</div>
                 </div>
             </div>
 
-            <!-- Action Type Filter -->
-            <div class="w-full lg:w-48">
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Action Category</label>
-                <select id="actionFilter" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 bg-white">
-                    <option value="all">All Actions</option>
-                    <option value="Suspended">Account Suspended</option>
-                    <option value="Reactivated">Account Reactivated</option>
-                    <option value="Failed">Failed Login</option>
-                </select>
+            <!-- Headers -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Operation Logs Review <span class="bg-violet-100 text-violet-700 text-xs px-2.5 py-1 rounded-md font-bold ml-2 align-middle">UC #62</span></h1>
+                <p class="text-slate-500 mt-2 text-sm">Review objective evidence and operation history for suspicious or banned users.</p>
             </div>
 
-            <!-- Date Filter Mock -->
-            <div class="w-full lg:w-40">
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Date Range</label>
-                <input type="text" id="dateFilter" 
-                       placeholder="mm/dd/yyyy" 
-                       onfocus="this.type='date'" 
-                       onblur="if(this.value=='') this.type='text'"
-                       class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 placeholder-slate-400 text-slate-600 appearance-none">
+            <!-- UC 62 Normal Flow 2 & Sub Flow 1: Search & Multi-Filter Controls -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col lg:flex-row gap-4 items-end">
+                
+                <!-- Target User Search -->
+                <div class="flex-1 w-full relative">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Search Target User</label>
+                    <div class="relative">
+                        <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="logSearchInput" placeholder="Enter username or email..." class="w-full border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition">
+                    </div>
+                </div>
+
+                <!-- Action Type Filter -->
+                <div class="w-full lg:w-48">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Action Category</label>
+                    <select id="actionFilter" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 bg-white">
+                        <option value="all">All Actions</option>
+                        <option value="Suspended">Account Suspended</option>
+                        <option value="Reactivated">Account Reactivated</option>
+                        <option value="Failed">Failed Login</option>
+                    </select>
+                </div>
+
+                <!-- Date Filter Mock -->
+                <div class="w-full lg:w-40">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Date Range</label>
+                    <input type="text" id="dateFilter" 
+                           placeholder="mm/dd/yyyy" 
+                           onfocus="this.type='date'" 
+                           onblur="if(this.value=='') this.type='text'"
+                           class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 placeholder-slate-400 text-slate-600 appearance-none">
+                </div>
+
+                <!-- Search Buttons -->
+                <div class="flex gap-3">
+                    <button id="searchLogsBtn" class="bg-slate-900 text-white px-6 py-2.5 text-sm rounded-xl font-bold border border-transparent hover:bg-slate-800 transition shadow-sm">Review Logs</button>
+                    <button id="clearLogsBtn" class="bg-white text-slate-600 px-6 py-2.5 text-sm rounded-xl font-bold border border-slate-300 hover:bg-slate-50 transition shadow-sm">Clear</button>
+                </div>
             </div>
 
-            <!-- Search Buttons -->
-            <div class="flex gap-3">
-                <button id="searchLogsBtn" class="bg-slate-900 text-white px-6 py-2.5 text-sm rounded-xl font-bold border border-transparent hover:bg-slate-800 transition shadow-sm">Review Logs</button>
-                <button id="clearLogsBtn" class="bg-white text-slate-600 px-6 py-2.5 text-sm rounded-xl font-bold border border-slate-300 hover:bg-slate-50 transition shadow-sm">Clear</button>
+            <!-- System Message Box (For Alternative Flows) -->
+            <div id="systemMsgBox" class="hidden mb-6 p-4 rounded-xl text-sm font-semibold border"></div>
+
+            <!-- UC 62 Normal Flow 3: Displays the user's operation logs table -->
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider w-48">Timestamp & IP</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Target User</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Action Event</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider w-64">Evidence Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody" class="divide-y divide-slate-100 bg-white text-sm">
+                        <!-- Javascript will inject log rows here -->
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- 统一退出弹窗 -->
+    <div id="logoutModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md px-8 py-8 text-center">
+            <h3 class="text-xl font-bold text-slate-900">Sign out of Admin Console?</h3>
+            <p class="text-sm text-slate-500 mt-2">You will be securely logged out of the system.</p>
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button id="logoutCancel" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">Cancel</button>
+                <button id="logoutConfirm" class="px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 rounded-xl hover:bg-rose-700">Sign out</button>
             </div>
         </div>
+    </div>
 
-        <!-- System Message Box (For Alternative Flows) -->
-        <div id="systemMsgBox" class="hidden mb-6 p-4 rounded-xl text-sm font-semibold border"></div>
-
-        <!-- UC 62 Normal Flow 3: Displays the user's operation logs table -->
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                        <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider w-48">Timestamp & IP</th>
-                        <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Target User</th>
-                        <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Action Event</th>
-                        <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider w-64">Evidence Details</th>
-                    </tr>
-                </thead>
-                <tbody id="logsTableBody" class="divide-y divide-slate-100 bg-white text-sm">
-                    <!-- Javascript will inject log rows here -->
-                </tbody>
-            </table>
-        </div>
-
-    </main>
-
+    <script src="logout.js"></script>
     <script src="s12-audit_log_review-admin.js"></script>
 </body>
 </html>

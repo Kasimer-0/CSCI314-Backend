@@ -3,106 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discover · Fundraising System</title>
+    <title>Donee Dashboard · Fundraising System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-[#F8FAFC] min-h-screen text-slate-800 font-inter">
 
+    <!-- 顶部导航栏 -->
     <header class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center">
         <div class="flex items-center gap-8">
             <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">F</div>
+                <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
                 <span class="text-base font-bold text-slate-900">Fundraising System</span>
             </div>
             <nav class="hidden md:flex gap-6 text-sm text-slate-600 font-medium">
-                <span class="text-blue-600 font-semibold">Discover</span>
-                <a id="navMyActivities" href="s13-my-activities.html" class="hover:text-slate-900">My Activities</a>
-                <a href="#" class="hover:text-slate-900">History</a>
-                <a id="navProfile" href="#" class="hover:text-slate-900">Profile</a>
+                <span class="text-blue-600 font-semibold">Dashboard</span>
+                <a href="s2-discover.html" class="hover:text-slate-900">Discover</a>
+                <a href="s13-my-activities.html" class="hover:text-slate-900">My Activities</a>
+                <a href="s3-view-profile.html" class="hover:text-slate-900">Profile</a>
             </nav>
         </div>
         <div class="flex items-center gap-3">
-            <div class="relative hidden md:block">
-                <span class="absolute left-3 top-2 text-slate-400 text-sm">🔍</span>
-                <input id="searchInput" type="text" placeholder="Search campaigns…" class="bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-sm w-64 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-            </div>
             <button class="text-slate-400 hover:text-slate-700">🔔</button>
-            <button id="logoutTrigger" class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs" aria-label="Sign out">AM</button>
+            <button id="logoutTrigger" class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs" aria-label="Sign out">ME</button>
         </div>
     </header>
 
     <main class="w-full max-w-6xl mx-auto px-6 py-10">
-        <!-- Greeting -->
-        <div class="flex items-end justify-between flex-wrap gap-3">
-            <div>
-                <h1 id="greeting" class="text-3xl font-bold text-slate-900 tracking-tight">Discover</h1>
-                <p class="text-slate-500 mt-2 text-sm">Browse fundraisers making real impact — pick a cause and chip in.</p>
-            </div>
+        <!-- 欢迎区域 -->
+        <div class="mb-10">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Welcome back, <span id="greetingName" class="text-blue-600">User</span>!</h1>
+            <p class="text-slate-500 mt-2 text-sm">Here is an overview of your fundraising journey. What would you like to do today?</p>
         </div>
 
-        <!-- KPI strip (doner-focused) -->
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+        <!-- 快捷入口卡片区 (Quick Actions) -->
+        <h2 class="text-lg font-bold text-slate-900 mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            
+            <!-- 卡片 1: Discover -->
+            <a href="s2-discover.html" class="group bg-white rounded-2xl border border-slate-200 p-6 hover:border-blue-300 hover:shadow-md transition">
+                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-blue-600 group-hover:text-white transition">🔍</div>
+                <h3 class="text-lg font-bold text-slate-900">Discover Campaigns</h3>
+                <p class="text-sm text-slate-500 mt-1">Browse ongoing fundraisers and find a cause to support today.</p>
+            </a>
+
+            <!-- 卡片 2: My Activities -->
+            <a href="s13-my-activities.html" class="group bg-white rounded-2xl border border-slate-200 p-6 hover:border-emerald-300 hover:shadow-md transition">
+                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-emerald-600 group-hover:text-white transition">📊</div>
+                <h3 class="text-lg font-bold text-slate-900">My Activities</h3>
+                <p class="text-sm text-slate-500 mt-1">Track the campaigns you've supported and view your donation history.</p>
+            </a>
+
+            <!-- 卡片 3: Profile -->
+            <a href="s3-view-profile.html" class="group bg-white rounded-2xl border border-slate-200 p-6 hover:border-violet-300 hover:shadow-md transition">
+                <div class="w-12 h-12 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-violet-600 group-hover:text-white transition">👤</div>
+                <h3 class="text-lg font-bold text-slate-900">Manage Profile</h3>
+                <p class="text-sm text-slate-500 mt-1">Update your personal information, avatar, and account settings.</p>
+            </a>
+        </div>
+
+        <!-- 简单的 KPI 统计区 -->
+        <h2 class="text-lg font-bold text-slate-900 mb-4">Your Impact Summary</h2>
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <p class="text-xs text-slate-500 font-medium">Donations made</p>
-                <p id="kpiDonations" class="text-2xl font-bold text-slate-900 mt-2">0</p>
+                <p class="text-xs text-slate-500 font-medium">Total Donations</p>
+                <p class="text-2xl font-bold text-slate-900 mt-2">$0.00</p>
             </div>
             <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <p class="text-xs text-slate-500 font-medium">Saved campaigns</p>
-                <p id="kpiSaved" class="text-2xl font-bold text-slate-900 mt-2">0</p>
+                <p class="text-xs text-slate-500 font-medium">Campaigns Supported</p>
+                <p class="text-2xl font-bold text-slate-900 mt-2">0</p>
             </div>
             <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <p class="text-xs text-slate-500 font-medium">Active campaigns</p>
-                <p id="kpiActive" class="text-2xl font-bold text-slate-900 mt-2">0</p>
+                <p class="text-xs text-slate-500 font-medium">Saved / Bookmarked</p>
+                <p class="text-2xl font-bold text-slate-900 mt-2">0</p>
             </div>
             <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <p class="text-xs text-slate-500 font-medium">Categories live</p>
-                <p id="kpiCategories" class="text-2xl font-bold text-slate-900 mt-2">0</p>
+                <p class="text-xs text-slate-500 font-medium">Account Status</p>
+                <p class="text-xl font-bold text-emerald-600 mt-2 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Active
+                </p>
             </div>
         </section>
-
-        <!-- Featured banner -->
-        <section id="featuredCard" class="hidden mt-7 bg-gradient-to-br from-blue-600 to-violet-600 rounded-2xl text-white p-7 flex items-center justify-between gap-6">
-            <div>
-                <span class="inline-flex items-center gap-1 bg-white/20 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full">⭐ Featured</span>
-                <h2 id="featuredTitle" class="text-2xl font-bold mt-3"></h2>
-                <p id="featuredTagline" class="text-sm text-white/90 mt-1.5"></p>
-                <p id="featuredMeta" class="text-xs text-white/80 mt-3"></p>
-            </div>
-            <a id="featuredCta" href="#" class="bg-white text-blue-700 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-100 transition shrink-0">Open campaign →</a>
-        </section>
-
-        <!-- Filter row -->
-        <div class="mt-7 flex flex-wrap items-center justify-between gap-3">
-            <div id="catChips" class="flex flex-wrap items-center gap-2"></div>
-            <label class="text-sm text-slate-500 inline-flex items-center gap-2">
-                <span class="hidden sm:inline">Sort:</span>
-                <select id="sortSelect" class="border border-slate-300 bg-white rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                    <option value="recent">Recently launched</option>
-                    <option value="goal">Closest to goal</option>
-                    <option value="ending">Ending soon</option>
-                </select>
-            </label>
-        </div>
-
-        <p id="resultsLine" class="text-xs text-slate-500 mt-4"></p>
-
-        <section id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-2"></section>
-
-        <div id="emptyState" class="hidden bg-white border border-slate-200 rounded-2xl py-16 text-center mt-2">
-            <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xl mb-3">🔍</div>
-            <p class="text-slate-700 font-semibold">No matching campaigns</p>
-            <p class="text-slate-500 text-sm mt-1">Try a different category or clear your search.</p>
-        </div>
     </main>
 
-    <!-- Logout modal -->
+    <!-- Logout modal (与之前保持一致) -->
     <div id="logoutModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md px-8 py-8 text-center">
-            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H5a3 3 0 01-3-3V8a3 3 0 013-3h5a3 3 0 013 3v1"/></svg>
-            </div>
             <h3 class="text-xl font-bold text-slate-900">Sign out of Fundraising System?</h3>
             <p class="text-sm text-slate-500 mt-2">You'll need to sign in again to access your account.</p>
             <div class="grid grid-cols-2 gap-3 mt-6">
@@ -112,8 +99,7 @@
         </div>
     </div>
 
-    <script src="data.js"></script>
     <script src="logout.js"></script>
-    <script src="s2-donee-dash.js"></script>
+    <script src="s2-donee-dashboard.js"></script>
 </body>
 </html>

@@ -3,85 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage User Accounts</title>
+    <title>Manage Users · Admin Console</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#F8FAFC] min-h-screen text-slate-800 flex flex-col font-inter">
+<body class="bg-[#F8FAFC] min-h-screen text-slate-800 font-inter">
 
-    <!-- Header (No IAM Module Tag) -->
-    <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
-        <div class="flex items-center gap-8">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
-                <span class="text-lg font-bold text-slate-900">Fundraising System</span>
-            </div>
-            <nav class="hidden md:flex gap-6 text-sm font-medium">
-                <a href="s7-search&filter-admin.html" class="text-blue-600 border-b-2 border-blue-600 pb-4 -mb-4">User Management</a>
-                <a href="s12-audit_log_review-admin.html" class="text-slate-500 hover:text-slate-900">Audit Logs</a>
-                <a href="s10-role_assignment-admin.html" class="text-slate-500 hover:text-slate-900">Registrations</a>
-                <a href="s6-create-admin.html" class="text-slate-500 hover:text-slate-900">Create Admin</a>
-            </nav>
-        </div>
-        <button id="logoutBtn" class="bg-[#CC0000] text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-red-700 transition shadow-sm">Logout</button>
-    </header>
-
-    <main class="w-full max-w-6xl mx-auto px-6 py-10">
-        
-        <!-- Use Case Description -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Manage User Accounts</h1>
-            <p class="text-slate-500 mt-2 text-sm">Search users by email or name, and filter the user list by their assigned roles.</p>
-        </div>
-
-        <!-- UC 57: Search & Filter Controls -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col md:flex-row gap-4 items-end">
-            <!-- Search Input -->
-            <div class="flex-1 w-full relative">
-                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Search User</label>
-                <div class="relative">
-                    <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="text" id="searchInput" placeholder="Enter name or email address..." class="w-full border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition">
+    <div class="flex min-h-screen">
+        <!-- 侧边栏 -->
+        <aside class="w-64 bg-slate-900 text-slate-200 flex flex-col fixed h-full z-20">
+            <div class="px-6 py-6 border-b border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
+                    <div>
+                        <div class="text-sm font-bold text-white">Fundraising System</div>
+                        <div class="text-xs text-slate-400">Admin Console</div>
+                    </div>
                 </div>
             </div>
-            <!-- Role Filter -->
-            <div class="w-full md:w-56">
-                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Role Filter</label>
-                <select id="roleFilter" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white">
-                    <option value="all">All Roles</option>
-                    <option value="Fundraiser">Fundraiser</option>
-                    <option value="Donee">Donee</option>
-                    <option value="User Admin">User Admin</option>
-                </select>
+            <nav class="px-3 py-5 space-y-1 text-sm overflow-y-auto">
+                <p class="px-3 text-[11px] uppercase tracking-wider text-slate-500 font-bold mb-2">Main</p>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="s7-admin-dashboard.html"><span>📊</span> Dashboard</a>
+                <!-- Users 高亮 -->
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-600 text-white font-semibold" href="s7-search&filter-admin.html"><span>👥</span> Users</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="s10-role_assignment-admin.html"><span>📝</span> Registrations</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>📈</span> Activities</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>🏷</span> Categories</a>
+                
+                <p class="px-3 mt-6 mb-2 text-[11px] uppercase tracking-wider text-slate-500 font-bold">System</p>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="s6-create-admin.html"><span>🛡️</span> System Admins</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="s12-audit_log_review-admin.html"><span>🗂</span> Audit Logs</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>⚙️</span> Settings</a>
+            </nav>
+            <div class="mt-auto px-3 py-4 border-t border-slate-800">
+                <button id="logoutTrigger" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-slate-800 text-slate-300">
+                    <span>↩</span> Sign out
+                </button>
             </div>
-            <!-- Actions -->
-            <div class="flex gap-3">
-                <button id="searchBtn" class="bg-slate-900 text-white px-6 py-2.5 text-sm rounded-xl font-medium hover:bg-slate-800 transition">Search</button>
-                <button id="clearBtn" class="bg-white border border-slate-300 text-slate-600 px-6 py-2.5 text-sm rounded-xl font-medium hover:bg-slate-50 transition">Clear</button>
+        </aside>
+
+        <!-- 主内容区 (加入 ml-64 为固定侧边栏留出空间) -->
+        <main class="flex-1 ml-64 px-8 py-8">
+            <div class="flex items-center justify-between mb-6">
+                
+                <div class="flex items-center gap-3"><div class="text-sm text-slate-500"><span class="text-slate-900 font-semibold">Users</span></div>
+                    <button class="text-slate-400 hover:text-slate-700">🔔</button>
+                    <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs" id="navAvatar">AD</div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Manage User Accounts</h1>
+                <p class="text-slate-500 mt-2 text-sm">Search users by email or name, and filter the user list by their assigned roles.</p>
+            </div>
+
+            <!-- 搜索控件 -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col md:flex-row gap-4 items-end">
+                <div class="flex-1 w-full relative">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Search User</label>
+                    <div class="relative">
+                        <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="searchInput" placeholder="Enter name or email address..." class="w-full border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition">
+                    </div>
+                </div>
+                <div class="w-full md:w-56">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Role Filter</label>
+                    <select id="roleFilter" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white">
+                        <option value="all">All Roles</option>
+                        <option value="Fundraiser">Fundraiser</option>
+                        <option value="Donee">Donee</option>
+                        <option value="User Admin">User Admin</option>
+                    </select>
+                </div>
+                <div class="flex gap-3">
+                    <button id="searchBtn" class="bg-slate-900 text-white px-6 py-2.5 text-sm rounded-xl font-medium hover:bg-slate-800 transition shadow-sm">Search</button>
+                    <button id="clearBtn" class="bg-white border border-slate-300 text-slate-600 px-6 py-2.5 text-sm rounded-xl font-medium hover:bg-slate-50 transition">Clear</button>
+                </div>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">User Details</th>
+                            <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Role Assigned</th>
+                            <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Account Status</th>
+                            <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-100 bg-white text-sm">
+                        <!-- JS 注入 -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- 统一退出弹窗 -->
+    <div id="logoutModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md px-8 py-8 text-center">
+            <h3 class="text-xl font-bold text-slate-900">Sign out of Admin Console?</h3>
+            <p class="text-sm text-slate-500 mt-2">You will be securely logged out of the system.</p>
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button id="logoutCancel" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">Cancel</button>
+                <button id="logoutConfirm" class="px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 rounded-xl hover:bg-rose-700">Sign out</button>
             </div>
         </div>
+    </div>
 
-        <!-- UC 57: User Data Table -->
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">User Details</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Role Assigned</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Account Status</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody" class="divide-y divide-slate-100 bg-white text-sm">
-                    <!-- Injected by script.js -->
-                </tbody>
-            </table>
-        </div>
-
-    </main>
-
-    <script src="data.js"></script>
+    <script src="logout.js"></script>
     <script src="s7-search&filter-admin.js"></script>
 </body>
 </html>

@@ -1,31 +1,22 @@
-// US #6 — User edits their own profile (Donee/Fundraiser self-edit).
-// Resolves the target user from ?userId or the active session, pre-fills the form, and on save
-// mutates usersData (rebuilding `username` from first/last) before redirecting to s3.
-
-const params = new URLSearchParams(window.location.search);
-const explicitId = parseInt(params.get('userId'), 10);
-
-const session = window.FS.getSession();
-const targetId = explicitId || (session && session.userId);
+// s4-edit-profile.js - 彻底重写对接后端 API
+const API_BASE_URL = 'http://127.0.0.1:8000';
+const token = localStorage.getItem('fs_token') || sessionStorage.getItem('fs_token');
 
 const errorBox = document.getElementById('errorBox');
 const successBox = document.getElementById('successBox');
-const photoTile = document.getElementById('photoTile');
 const navAvatar = document.getElementById('logoutTrigger');
-const cancelLink = document.getElementById('cancelLink');
-const crumbProfile = document.getElementById('crumbProfile');
-
-const inputs = {
-    firstName: document.getElementById('firstName'),
-    lastName: document.getElementById('lastName'),
-    email: document.getElementById('email'),
-    phone: document.getElementById('phone'),
-    dob: document.getElementById('dob'),
-    location: document.getElementById('location'),
-    bio: document.getElementById('bio')
-};
 const saveBtn = document.getElementById('saveBtn');
 const form = document.getElementById('editForm');
+
+const usernameInput = document.getElementById('usernameInput');
+const emailInput = document.getElementById('emailInput');
+const phoneInput = document.getElementById('phoneInput');
+
+if (!token) {
+    window.location.href = 's1-login.html';
+} else {
+    loadProfileData();
+}
 
 function showError(msg) {
     errorBox.textContent = msg;
@@ -35,79 +26,80 @@ function showError(msg) {
 
 function hideError() { errorBox.classList.add('hidden'); }
 
-let user = targetId ? window.FS.findUserById(targetId) : null;
+async function loadProfileData() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/profile`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-if (!user) {
-    showError('No user selected. Sign in or open this page from your profile.');
-    Object.values(inputs).forEach(i => { i.disabled = true; });
-    saveBtn.disabled = true;
-    saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
-} else {
-    // Pre-fill form
-    inputs.firstName.value = user.first_name || (user.username || '').split(/\s+/)[0] || '';
-    inputs.lastName.value  = user.last_name  || (user.username || '').split(/\s+/).slice(1).join(' ') || '';
-    inputs.email.value     = user.email || '';
-    inputs.phone.value     = user.phone || '';
-    inputs.dob.value       = user.date_of_birth || '';
-    inputs.location.value  = user.location || '';
-    inputs.bio.value       = user.bio || '';
+        if (!res.ok) throw new Error('Failed to load profile data.');
 
-    photoTile.textContent = window.FS.initials(user.username);
-    navAvatar.textContent = window.FS.initials(user.username);
-    cancelLink.href = `s3-view-profile.html?userId=${user.user_id}`;
-    crumbProfile.href = cancelLink.href;
+        const user = await res.json();
+        
+        // 预填表单数据
+        usernameInput.value = user.username || '';
+        emailInput.value = user.email || '';
+        phoneInput.value = user.phone_number || '';
+
+        // 更新右上角头像
+        if (navAvatar) {
+            navAvatar.textContent = user.username.substring(0, 2).toUpperCase();
+        }
+    } catch (err) {
+        showError(err.message);
+        saveBtn.disabled = true;
+    }
 }
 
-// Photo controls — placeholder (no real upload in the demo)
-document.getElementById('uploadBtn').addEventListener('click', () => {
-    showError('Photo upload is not wired in this demo.');
-});
-document.getElementById('removeBtn').addEventListener('click', () => {
-    photoTile.textContent = '?';
-    hideError();
-});
-
-form.addEventListener('submit', (e) => {
+form.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideError();
-    if (!user) return;
 
-    const first = inputs.firstName.value.trim();
-    const last = inputs.lastName.value.trim();
-    const email = inputs.email.value.trim();
-    const bio = inputs.bio.value.trim();
+    const username = usernameInput.value.trim();
+    const phone = phoneInput.value.trim();
 
-    if (!first || !last || !email) {
-        showError('First name, last name, and email are required.');
-        return;
-    }
-    if (!email.includes('@')) {
-        showError('Enter a valid email address.');
-        return;
-    }
-    const taken = usersData.some(u => u.email.toLowerCase() === email.toLowerCase() && u.user_id !== user.user_id);
-    if (taken) {
-        showError('That email is already in use by another account.');
-        return;
-    }
-    if (bio.length > 280) {
-        showError('Bio must be 280 characters or fewer.');
+    if (!username) {
+        showError('Username / Full name is required.');
         return;
     }
 
-    user.first_name = first;
-    user.last_name = last;
-    user.username = `${first} ${last}`;
-    user.email = email;
-    user.phone = inputs.phone.value.trim();
-    user.date_of_birth = inputs.dob.value || '';
-    user.location = inputs.location.value.trim();
-    user.bio = bio;
-
-    successBox.classList.remove('hidden');
     saveBtn.disabled = true;
-    saveBtn.textContent = 'Saved';
-    setTimeout(() => {
-        window.location.href = `s3-view-profile.html?userId=${user.user_id}`;
-    }, 900);
+    saveBtn.textContent = 'Saving...';
+
+    try {
+        // 调用后端的更新接口 (根据你的 schema，目前支持修改 username 和 phone_number)
+        const response = await fetch(`${API_BASE_URL}/profile`, {
+            method: 'PATCH', // 使用 PATCH 或 PUT 更新，视你后端的路由而定
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: username,
+                phone_number: phone || null
+            })
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.detail || 'Failed to update profile.');
+        }
+
+        successBox.classList.remove('hidden');
+        saveBtn.textContent = 'Saved';
+        
+        // 成功后延迟 1.5 秒跳回 Profile 查看页
+        setTimeout(() => {
+            window.location.href = 's3-view-profile.html';
+        }, 1500);
+
+    } catch (err) {
+        showError(err.message);
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save changes';
+    }
 });

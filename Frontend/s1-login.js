@@ -58,13 +58,16 @@ loginForm.addEventListener('submit', async (e) => {
         const user = await profileRes.json();
         store.setItem('fs_user', JSON.stringify(user));
 
+        // 3. 获取个人信息以判断角色，决定跳转页面
+        // ... 前面获取 user 的代码保持不变 ...
+        
         // 后端 role_id 约定：0 是 Admin, 1 是 Donee/Donor, 2 是 Organization/Fundraiser
         if (user.role_id === 0) {
-            window.location.href = 's7-search&filter-admin.html'; // 管理员去Dashboard
+            window.location.href = 's7-admin-dashboard.html'; // ← 改为跳转到 Dashboard
         } else if (user.role_id === 1) {
-            window.location.href = 's2-donee-dashboard.html'; // Donee 跳转到 Discover 页面
+            window.location.href = 's2-donee-dashboard.html'; 
         } else {
-            window.location.href = 's3-view-profile.html'; // 其他角色去个人主页
+            window.location.href = 's3-view-profile.html'; 
         }
     } catch (err) {
         showError(err.message);
