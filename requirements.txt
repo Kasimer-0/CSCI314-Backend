@@ -1,0 +1,15 @@
+# Web Framework & Server
+fastapi==0.110.0
+uvicorn==0.27.1
+
+# Database & Environment
+supabase==2.3.7
+python-dotenv==1.0.1
+
+# Security & Validation
+PyJWT==2.8.0
+pydantic[email]==2.6.3
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.9
+
+#pip install -r requirements.txt
