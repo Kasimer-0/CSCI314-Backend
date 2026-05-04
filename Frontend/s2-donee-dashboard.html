@@ -3,95 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Donee Dashboard · Fundraising System</title>
+    <title>Discover · Fundraising System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-[#F8FAFC] min-h-screen text-slate-800 font-inter">
 
-    <!-- 顶部导航栏 -->
-    <header class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center">
-        <div class="flex items-center gap-8">
-            <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
-                <span class="text-base font-bold text-slate-900">Fundraising System</span>
-            </div>
-            <nav class="hidden md:flex gap-6 text-sm text-slate-600 font-medium">
-                <span class="text-blue-600 font-semibold">Dashboard</span>
-                <a href="s2-discover.html" class="hover:text-slate-900">Discover</a>
-                <a href="s13-my-activities.html" class="hover:text-slate-900">My Activities</a>
-                <a href="s3-view-profile.html" class="hover:text-slate-900">Profile</a>
-            </nav>
-        </div>
-        <div class="flex items-center gap-3">
-            <button class="text-slate-400 hover:text-slate-700">🔔</button>
-            <button id="logoutTrigger" class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs" aria-label="Sign out">ME</button>
-        </div>
-    </header>
+    <!-- 动态头部占位符，与之前 profile 保持一致的登录体验 -->
+    <header id="dynamicHeader" class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center sticky top-0 z-30"></header>
 
     <main class="w-full max-w-6xl mx-auto px-6 py-10">
-        <!-- 欢迎区域 -->
-        <div class="mb-10">
-            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Welcome back, <span id="greetingName" class="text-blue-600">User</span>!</h1>
-            <p class="text-slate-500 mt-2 text-sm">Here is an overview of your fundraising journey. What would you like to do today?</p>
+        
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Discover Causes</h1>
+                <p class="text-slate-500 mt-2 text-sm">Search, filter, and sort to find projects that need your help.</p>
+            </div>
+            <!-- 收藏夹切换按钮 -->
+            <button id="toggleFavViewBtn" class="bg-rose-50 text-rose-600 px-4 py-2 rounded-xl text-sm font-bold border border-rose-100 hover:bg-rose-100 transition flex items-center gap-2">
+                <span>♡</span> My Favorites (<span id="favCount">0</span>)
+            </button>
         </div>
 
-        <!-- 快捷入口卡片区 (Quick Actions) -->
-        <h2 class="text-lg font-bold text-slate-900 mb-4">Quick Actions</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <!-- 聚合控制台：S21 (分类), S22 (搜索), S23 (排序) 的完美融合 -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-8 sticky top-24 z-20 flex flex-col lg:flex-row gap-4 items-center">
             
-            <!-- 卡片 1: Discover -->
-            <a href="s2-discover.html" class="group bg-white rounded-2xl border border-slate-200 p-6 hover:border-blue-300 hover:shadow-md transition">
-                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-blue-600 group-hover:text-white transition">🔍</div>
-                <h3 class="text-lg font-bold text-slate-900">Discover Campaigns</h3>
-                <p class="text-sm text-slate-500 mt-1">Browse ongoing fundraisers and find a cause to support today.</p>
-            </a>
+            <!-- 关键词搜索 -->
+            <div class="relative w-full lg:flex-1">
+                <svg class="w-5 h-5 text-slate-400 absolute left-4 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="searchInput" placeholder="Search causes or keywords..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:bg-white transition">
+            </div>
 
-            <!-- 卡片 2: My Activities -->
-            <a href="s13-my-activities.html" class="group bg-white rounded-2xl border border-slate-200 p-6 hover:border-emerald-300 hover:shadow-md transition">
-                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-emerald-600 group-hover:text-white transition">📊</div>
-                <h3 class="text-lg font-bold text-slate-900">My Activities</h3>
-                <p class="text-sm text-slate-500 mt-1">Track the campaigns you've supported and view your donation history.</p>
-            </a>
+            <!-- 分类筛选 -->
+            <div class="w-full lg:w-48 relative">
+                 <select id="categoryFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:bg-white appearance-none cursor-pointer">
+                    <option value="">All Categories</option>
+                    <option value="1">Education</option>
+                    <option value="2">Disaster Relief</option>
+                    <option value="3">Healthcare</option>
+                    <option value="4">Animals</option>
+                    <option value="5">Environment</option>
+                    <option value="6">Community</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
 
-            <!-- 卡片 3: Profile -->
-            <a href="s3-view-profile.html" class="group bg-white rounded-2xl border border-slate-200 p-6 hover:border-violet-300 hover:shadow-md transition">
-                <div class="w-12 h-12 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-violet-600 group-hover:text-white transition">👤</div>
-                <h3 class="text-lg font-bold text-slate-900">Manage Profile</h3>
-                <p class="text-sm text-slate-500 mt-1">Update your personal information, avatar, and account settings.</p>
-            </a>
+            <div class="hidden lg:block w-px h-8 bg-slate-200 mx-2"></div>
+
+            <!-- 多维排序 -->
+            <div class="w-full lg:w-64 relative">
+                <select id="sortFilter" class="w-full border-2 border-blue-100 bg-blue-50/50 rounded-xl pl-4 pr-8 py-2.5 text-sm outline-none focus:border-blue-500 cursor-pointer font-bold text-slate-700 appearance-none">
+                    <option value="created_at-True">Newest First</option>
+                    <option value="created_at-False">Oldest First</option>
+                    <option value="target_amount-True">Highest Goal</option>
+                    <option value="remaining_amount-True">Most Urgent (Highest Need)</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-blue-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+            
         </div>
 
-        <!-- 简单的 KPI 统计区 -->
-        <h2 class="text-lg font-bold text-slate-900 mb-4">Your Impact Summary</h2>
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <p class="text-xs text-slate-500 font-medium">Total Donations</p>
-                <p class="text-2xl font-bold text-slate-900 mt-2">$0.00</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <p class="text-xs text-slate-500 font-medium">Campaigns Supported</p>
-                <p class="text-2xl font-bold text-slate-900 mt-2">0</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <p class="text-xs text-slate-500 font-medium">Saved / Bookmarked</p>
-                <p class="text-2xl font-bold text-slate-900 mt-2">0</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <p class="text-xs text-slate-500 font-medium">Account Status</p>
-                <p class="text-xl font-bold text-emerald-600 mt-2 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Active
-                </p>
-            </div>
-        </section>
+        <!-- 结果方块阵列 -->
+        <div id="activitiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+        <div id="emptyStateMsg" class="hidden py-24 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 border-dashed">
+            <p class="text-slate-600 text-sm font-bold">No campaigns match your current filters.</p>
+        </div>
     </main>
 
-    <!-- Logout modal (与之前保持一致) -->
+    <!-- Logout modal -->
     <div id="logoutModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md px-8 py-8 text-center">
-            <h3 class="text-xl font-bold text-slate-900">Sign out of Fundraising System?</h3>
-            <p class="text-sm text-slate-500 mt-2">You'll need to sign in again to access your account.</p>
+            <h3 class="text-xl font-bold text-slate-900">Sign out of System?</h3>
             <div class="grid grid-cols-2 gap-3 mt-6">
                 <button id="logoutCancel" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">Cancel</button>
                 <button id="logoutConfirm" class="px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 rounded-xl hover:bg-rose-700">Sign out</button>
@@ -99,6 +87,7 @@
         </div>
     </div>
 
+    <!-- 挂载脚本 -->
     <script src="logout.js"></script>
     <script src="s2-donee-dashboard.js"></script>
 </body>

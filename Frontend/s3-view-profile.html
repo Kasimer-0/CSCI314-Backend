@@ -3,95 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Profile · Fundraising System</title>
+    <title>Profile · Fundraising System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-[#F8FAFC] min-h-screen text-slate-800 font-inter">
 
-    <!-- 统一的顶部导航栏 -->
-    <header class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center">
-        <div class="flex items-center gap-8">
-            <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
-                <span class="text-base font-bold text-slate-900">Fundraising System</span>
-            </div>
-            <nav class="hidden md:flex gap-6 text-sm text-slate-600 font-medium">
-                <a href="s2-donee-dashboard.html" class="hover:text-slate-900">Dashboard</a>
-                <a href="s2-discover.html" class="hover:text-slate-900">Discover</a>
-                <a href="s13-my-activities.html" class="hover:text-slate-900">My Activities</a>
-                <span class="text-blue-600 font-semibold">Profile</span>
-            </nav>
-        </div>
-        <div class="flex items-center gap-3">
-            <button class="text-slate-400 hover:text-slate-700">🔔</button>
-            <button id="logoutTrigger" class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs" aria-label="Sign out">ME</button>
-        </div>
-    </header>
+    <!-- 动态导航栏容器：JS 会在这里注入正确的身份栏 -->
+    <header id="dynamicHeader" class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center sticky top-0 z-20"></header>
 
-    <main class="w-full max-w-6xl mx-auto px-6 py-10">
-        <!-- Heading -->
-        <div class="flex items-end justify-between mb-8">
+    <main class="w-full max-w-5xl mx-auto px-6 py-10">
+        <div class="flex items-start justify-between mb-8">
             <div>
-                <p class="text-sm text-slate-500"><a href="s2-donee-dashboard.html" class="hover:text-blue-600">Dashboard</a> <span class="mx-1.5 text-slate-400">/</span> <span id="crumbName">Profile</span></p>
-                <h1 id="pageTitle" class="text-3xl font-bold text-slate-900 tracking-tight mt-1">My Profile</h1>
-                <p class="text-slate-500 mt-2 text-sm" id="pageSubtitle">Manage your personal information and account settings</p>
+                <p class="text-sm text-slate-500">Dashboard <span class="mx-1.5 text-slate-400">/</span> <span id="crumbName" class="text-slate-900 font-semibold">Profile</span></p>
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight mt-1"><span id="titleName">User</span>'s Profile</h1>
+                <p class="text-slate-500 mt-1.5 text-sm">Manage your personal information and account settings</p>
             </div>
-            <!-- 修复了这里的 href 跳转 -->
-            <a id="editLink" href="s4-edit-profile.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition shadow-sm flex items-center gap-2">
-                <span>✏</span> Edit Profile
-            </a>
+            <button onclick="window.location.href='s4-edit-profile.html'" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 shadow-sm flex items-center gap-2 cursor-pointer">
+                Edit Profile
+            </button>
         </div>
 
-        <!-- Error state -->
-        <div id="errorBox" class="hidden bg-rose-50 text-rose-700 text-sm p-4 rounded-xl border border-rose-100 mb-8"></div>
+        <div class="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
+            <!-- 左侧：头像与状态 -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center text-center self-start shadow-sm">
+                <div id="avatarInitials" class="w-24 h-24 bg-blue-100 text-blue-600 text-3xl font-bold rounded-full flex items-center justify-center"></div>
+                <h2 id="cardName" class="text-xl font-bold text-slate-900 mt-5">Loading...</h2>
+                <p id="cardEmail" class="text-sm text-slate-500 mt-1"></p>
+                <div id="statusBadge" class="mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span><span id="statusText">Unknown</span>
+                </div>
+            </div>
 
-        <!-- Body -->
-        <div id="profileBody" class="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
-            <!-- Avatar / stats card -->
-            <aside class="bg-white rounded-2xl border border-slate-200 p-6 text-center self-start">
-                <div id="avatarLg" class="w-24 h-24 mx-auto rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-3xl mb-4"></div>
-                <h2 id="userFullName" class="text-xl font-bold text-slate-900"></h2>
-                <p id="userEmailDisplay" class="text-sm text-slate-500 mt-1"></p>
-                <div id="statusPill" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"></div>
-                <hr class="my-5 border-slate-100">
-                <dl id="statsGrid" class="grid grid-cols-3 gap-2 text-center"></dl>
-            </aside>
-
-            <!-- Detail cards -->
-            <section class="space-y-6">
-                <article class="bg-white rounded-2xl border border-slate-200 p-6">
-                    <div class="flex items-center justify-between mb-5">
+            <!-- 右侧：详情卡片 -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-200 p-7 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
                         <h3 class="text-base font-bold text-slate-900">Personal Information</h3>
                         <span class="text-slate-400">👤</span>
                     </div>
-                    <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 text-sm">
-                        <div><dt class="text-xs text-slate-500 font-semibold mb-1">Full name</dt><dd id="fldFullName" class="text-slate-900 font-semibold"></dd></div>
-                        <div><dt class="text-xs text-slate-500 font-semibold mb-1">Email address</dt><dd id="fldEmail" class="text-slate-900 font-semibold"></dd></div>
-                        <div><dt class="text-xs text-slate-500 font-semibold mb-1">Phone</dt><dd id="fldPhone" class="text-slate-900 font-semibold"></dd></div>
-                        <div><dt class="text-xs text-slate-500 font-semibold mb-1">Role</dt><dd id="fldRole"></dd></div>
-                    </dl>
-                </article>
-
-                <article class="bg-white rounded-2xl border border-slate-200 p-6">
-                    <div class="flex items-center justify-between mb-5">
-                        <h3 class="text-base font-bold text-slate-900">Account Settings</h3>
-                        <span class="text-slate-400">🛡</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 mb-1">Full name</p>
+                            <p id="infoName" class="text-sm font-bold text-slate-900"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 mb-1">Email address</p>
+                            <p id="infoEmail" class="text-sm font-bold text-slate-900"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 mb-1">Phone</p>
+                            <p id="infoPhone" class="text-sm font-bold text-slate-900">—</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 mb-1">Role</p>
+                            <span id="infoRole" class="inline-flex px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700"></span>
+                        </div>
                     </div>
-                    <dl class="grid grid-cols-1 gap-x-8 gap-y-5 text-sm">
-                        <div><dt class="text-xs text-slate-500 font-semibold mb-1">Member since</dt><dd id="fldMemberSince" class="text-slate-900 font-semibold"></dd></div>
-                    </dl>
-                </article>
-            </section>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 p-7 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-base font-bold text-slate-900">Account Settings</h3>
+                        <span class="text-slate-400">⚙</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 mb-1">Member since</p>
+                            <p id="infoDate" class="text-sm font-bold text-slate-900"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
     <!-- Logout modal -->
     <div id="logoutModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md px-8 py-8 text-center">
-            <h3 class="text-xl font-bold text-slate-900">Sign out of Fundraising System?</h3>
-            <p class="text-sm text-slate-500 mt-2">You'll need to sign in again to access your account.</p>
+            <h3 class="text-xl font-bold text-slate-900">Sign out of System?</h3>
             <div class="grid grid-cols-2 gap-3 mt-6">
                 <button id="logoutCancel" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">Cancel</button>
                 <button id="logoutConfirm" class="px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 rounded-xl hover:bg-rose-700">Sign out</button>

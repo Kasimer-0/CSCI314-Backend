@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 import schemas
 from database import supabase
-from dependencies import get_current_fundraiser # Introduce the authentication function we just wrote
+from dependencies import get_current_fundraiser 
 
 # Create Router instances and automatically add prefixes and category tags.
 router = APIRouter(
@@ -13,7 +13,6 @@ router = APIRouter(
     tags=["Sprint 2 - Fundraiser Activities"]
 )
 
-# Note: The path here is just "/" since the Router already has the prefix
 @router.post("/", response_model=schemas.ActivityResponse)
 def create_activity(activity: schemas.ActivityCreate, current_user: dict = Depends(get_current_fundraiser)):
     new_activity = {
@@ -36,15 +35,25 @@ def get_my_activities(
     status: Optional[str] = Query(None, description="Filter by Ongoing or Closed"), 
     current_user: dict = Depends(get_current_fundraiser)
 ):
+    # 1. 查询该募捐者名下的所有活动（排除已彻底删除的）
     query = supabase.table("activities").select("*").eq("fundraiser_id", current_user["user_id"])
     if status:
         query = query.eq("status", status)
-    response = query.order("created_at", desc=True).execute()
     
+    response = query.order("created_at", desc=True).execute()
     activities = response.data
+
+    # 2. 核心逻辑：为每个活动实时统计书签（Shortlist/Bookmark）数量
     for act in activities:
-        bookmark_count = supabase.table("bookmarks").select("bookmark_id", count="exact").eq("activity_id", act["activity_id"]).execute()
-        act["shortlist_count"] = bookmark_count.count
+        # 使用 count="exact" 仅获取总行数，而不拉取具体的 Donee 隐私数据，符合隐私保护要求
+        bookmark_count_resp = supabase.table("bookmarks")\
+            .select("bookmark_id", count="exact")\
+            .eq("activity_id", act["activity_id"])\
+            .execute()
+            
+        # 将统计结果挂载到字段中返回给前端
+        act["shortlist_count"] = bookmark_count_resp.count if bookmark_count_resp.count is not None else 0
+        
     return activities
 
 @router.get("/suggest-target")
@@ -83,3 +92,14 @@ def close_activity(activity_id: int, current_user: dict = Depends(get_current_fu
     if not res.data:
         raise HTTPException(status_code=404, detail="Activity not found or unauthorized")
     return {"message": "Activity successfully closed"}
+
+# 🔥 新增：软删除 / 归档接口
+@router.post("/{activity_id}/archive")
+def archive_activity(activity_id: int, current_user: dict = Depends(get_current_fundraiser)):
+    # 将状态更新为 'Archived'，而不是粗暴地 delete()
+    res = supabase.table("activities").update({"status": "Archived"}).eq("activity_id", activity_id).eq("fundraiser_id", current_user["user_id"]).execute()
+    
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Activity not found or unauthorized")
+        
+    return {"message": "Activity successfully archived"}

@@ -1,21 +1,13 @@
-// US — Modify an existing campaign + Manually close it (screens 16 & 17).
-// Reuses the launch form layout, pre-fills values from ?campaignId, mutates campaignsData on save.
-// The "Close campaign" button in the editing context bar opens the screen-17 confirmation modal.
+// s16-edit-campaign.js - 完美对接 FastAPI 真实后端版
+const API_BASE_URL = 'http://127.0.0.1:8000';
+const token = localStorage.getItem('fs_token') || sessionStorage.getItem('fs_token');
+if (!token) window.location.href = 's1-login.html';
 
 const params = new URLSearchParams(window.location.search);
 const campaignId = parseInt(params.get('campaignId'), 10);
-const campaign = campaignId ? window.FS.findCampaignById(campaignId) : null;
+let campaign = null;
 
-const session = window.FS.getSession();
-const fundraiser = (session && window.FS.findUserById(session.userId)) || window.FS.findUserById(7);
-if (fundraiser) {
-    document.getElementById('logoutTrigger').textContent = window.FS.initials(fundraiser.username);
-    document.getElementById('navProfile').href = `s3-view-profile.html?userId=${fundraiser.user_id}`;
-}
-
-const errorBox = document.getElementById('errorBox');
-const notFoundBox = document.getElementById('notFoundBox');
-const formArea = document.getElementById('formArea');
+const categoryMapReverse = { 1: 'Education', 2: 'Disaster Relief', 3: 'Healthcare', 4: 'Animals', 5: 'Environment', 6: 'Community' };
 
 const inputs = {
     title: document.getElementById('title'),
@@ -23,42 +15,72 @@ const inputs = {
     description: document.getElementById('description'),
     target: document.getElementById('target'),
     currency: document.getElementById('currency'),
-    startDate: document.getElementById('startDate'),
-    endDate: document.getElementById('endDate'),
     category: document.getElementById('category')
 };
 
-if (!campaign) {
-    notFoundBox.textContent = `No campaign found for ID ${params.get('campaignId') || ''}. Pick one from the dashboard.`;
-    notFoundBox.classList.remove('hidden');
-    formArea.classList.add('opacity-50', 'pointer-events-none');
-} else {
+async function init() {
+    try {
+        // 1. 获取用户信息
+        const profileRes = await fetch(`${API_BASE_URL}/profile`, { headers: { 'Authorization': `Bearer ${token}` }});
+        if (profileRes.ok) {
+            const fundraiser = await profileRes.json();
+            document.getElementById('logoutTrigger').textContent = window.FS ? window.FS.initials(fundraiser.username) : fundraiser.username.substring(0,2).toUpperCase();
+            document.getElementById('navProfile').href = `s3-view-profile.html?userId=${fundraiser.user_id}`;
+        }
+
+        // 2. 获取当前项目详情 (调用 donee.py 里的公共查询接口)
+        const campRes = await fetch(`${API_BASE_URL}/activities/${campaignId}`);
+        if (!campRes.ok) throw new Error();
+        const rawData = await campRes.json();
+        
+        // 翻译后端数据为前端可用的格式
+        campaign = {
+            campaign_id: rawData.activity_id,
+            title: rawData.title,
+            description: rawData.description,
+            goal_amount: rawData.target_amount,
+            raised_amount: rawData.current_amount || 0,
+            currency: 'USD',
+            category: categoryMapReverse[rawData.category_id] || 'Education',
+            status: rawData.is_private ? 'Draft' : rawData.status,
+            supporters: rawData.view_count || 0 // 暂用浏览量代替支持者数量展示
+        };
+        
+        populateForm();
+    } catch (err) {
+        document.getElementById('notFoundBox').textContent = `No campaign found.`;
+        document.getElementById('notFoundBox').classList.remove('hidden');
+        document.getElementById('formArea').classList.add('opacity-50', 'pointer-events-none');
+    }
+}
+
+function populateForm() {
     inputs.title.value = campaign.title;
-    inputs.tagline.value = campaign.tagline;
-    inputs.description.value = campaign.description || '';
+    inputs.tagline.value = campaign.description.substring(0, 50) + '...'; // 提取前段作为 tagline
+    inputs.description.value = campaign.description;
     inputs.target.value = campaign.goal_amount;
     inputs.currency.value = campaign.currency;
-    inputs.startDate.value = campaign.start_date || '';
-    inputs.endDate.value = campaign.end_date || '';
     inputs.category.value = campaign.category;
 
     const ctx = document.getElementById('contextBar');
     ctx.classList.remove('hidden');
     document.getElementById('ctxTitle').textContent = `Editing: ${campaign.title}`;
 
-    const statusTone = window.FS.STATUS_TONES[campaign.status] || 'bg-slate-100 text-slate-700';
-    document.getElementById('ctxStatus').outerHTML =
-        `<span class="ml-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ${statusTone}">${campaign.status}</span>`;
+    const statusTone = window.FS ? window.FS.STATUS_TONES[campaign.status] : 'bg-slate-100 text-slate-700';
+    document.getElementById('ctxStatus').outerHTML = `<span class="ml-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ${statusTone}">${campaign.status}</span>`;
 
-    const meta = [
-        `${window.FS.formatCurrency(campaign.raised_amount, campaign.currency)} of ${window.FS.formatCurrency(campaign.goal_amount, campaign.currency)} raised`,
-        `${campaign.supporters} supporters`,
-        campaign.last_donation_at ? `Last donation ${window.FS.relativeTime(campaign.last_donation_at)}` : 'No donations yet'
-    ].join(' · ');
-    document.getElementById('ctxMeta').textContent = meta;
-
+    const raisedFmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(campaign.raised_amount);
+    const goalFmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(campaign.goal_amount);
+    document.getElementById('ctxMeta').textContent = `${raisedFmt} of ${goalFmt} raised`;
     document.getElementById('viewPublicLink').href = `s20-campaign-detail.html?campaignId=${campaign.campaign_id}`;
     document.getElementById('visibilityLink').href = `s18-visibility.html?campaignId=${campaign.campaign_id}`;
+
+    // 后端目前不支持更新类别和时间，将这些输入框变灰锁定
+    inputs.category.disabled = true;
+    inputs.category.classList.add('bg-slate-50', 'cursor-not-allowed');
+    document.getElementById('startDate').disabled = true;
+    document.getElementById('endDate').disabled = true;
+
     if (campaign.status === 'Ongoing') {
         document.getElementById('closeCampaignBtn').classList.remove('hidden');
     }
@@ -66,102 +88,119 @@ if (!campaign) {
     renderPreview();
 }
 
+function renderPreview() {
+    const cat = inputs.category.value;
+    const coverMap = {Education:'blue', 'Disaster Relief':'rose', Healthcare:'mint', Animals:'yellow', Environment:'mint', Community:'violet'};
+    const coverKey = coverMap[cat] || 'blue';
+    
+    if (window.FS && window.FS.coverPalette) {
+        const cover = window.FS.coverPalette[coverKey];
+        document.getElementById('previewCover').className = `${cover.bg} h-44 flex items-center justify-center ${cover.icon} text-5xl`;
+    }
+    
+    document.getElementById('previewCategory').textContent = cat;
+    document.getElementById('previewTitle').textContent = inputs.title.value.trim() || 'Your campaign title appears here';
+    document.getElementById('previewTagline').textContent = inputs.tagline.value.trim() || '';
+
+    const goal = Number(inputs.target.value) || 0;
+    const pct = Math.min(100, Math.round((campaign.raised_amount / (goal || 1)) * 100));
+    document.getElementById('previewProgress').style.width = `${pct}%`;
+    document.getElementById('previewMeta').textContent = `$${campaign.raised_amount.toLocaleString()} raised of $${goal.toLocaleString()} goal · ${pct}%`;
+}
+
+Object.values(inputs).forEach(el => { el.addEventListener('input', renderPreview); el.addEventListener('change', renderPreview); });
+
+const errorBox = document.getElementById('errorBox');
 function showError(msg) { errorBox.textContent = msg; errorBox.classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); }
 function hideError() { errorBox.classList.add('hidden'); }
 
-// ---------- Preview rail ----------
-function renderPreview() {
-    const cat = inputs.category.value;
-    const coverKey = ({Education:'blue','Disaster Relief':'rose',Healthcare:'mint',Animals:'yellow',Environment:'mint',Community:'violet'})[cat] || (campaign && campaign.cover_color) || 'blue';
-    const cover = window.FS.coverPalette[coverKey];
-    const tone = window.FS.categoryStyles[cat] || 'bg-slate-100 text-slate-700';
-
-    document.getElementById('previewCover').className = `${cover.bg} h-44 flex items-center justify-center ${cover.icon} text-5xl`;
-    const catEl = document.getElementById('previewCategory');
-    catEl.className = `inline-flex w-fit px-2.5 py-1 rounded-full text-[11px] font-semibold ${tone}`;
-    catEl.textContent = cat;
-
-    document.getElementById('previewTitle').textContent = inputs.title.value.trim() || (campaign ? campaign.title : 'Your campaign title appears here');
-    document.getElementById('previewTagline').textContent = inputs.tagline.value.trim() || (campaign ? campaign.tagline : 'A short tagline shows on the campaign card to grab attention.');
-
-    const goal = Number(inputs.target.value) || 0;
-    const raised = campaign ? campaign.raised_amount : 0;
-    const pct = window.FS.percent(raised, goal);
-    document.getElementById('previewProgress').style.width = `${Math.min(100, pct)}%`;
-    const days = window.FS.daysLeft(inputs.endDate.value);
-    document.getElementById('previewMeta').textContent =
-        `${window.FS.formatCurrency(raised, inputs.currency.value)} raised of ${window.FS.formatCurrency(goal, inputs.currency.value)} goal · ${pct}% · ${days != null ? days + ' days left' : 'no end date'}`;
-}
-
-Object.values(inputs).forEach(el => {
-    el.addEventListener('input', renderPreview);
-    el.addEventListener('change', renderPreview);
-});
-
-document.getElementById('coverDrop').addEventListener('click', () => {
-    showError('Cover image upload is mocked — pick a Category to set the preview tone.');
-    setTimeout(hideError, 2200);
-});
-
-// ---------- Save / Discard ----------
-document.getElementById('campaignForm').addEventListener('submit', (e) => {
+// ========================
+// 保存编辑逻辑 (PATCH 请求)
+// ========================
+document.getElementById('campaignForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     hideError();
     if (!campaign) return;
+    
     const goal = Number(inputs.target.value) || 0;
-    if (!inputs.title.value.trim() || !inputs.tagline.value.trim()) {
-        showError('Title and tagline can\'t be empty.');
-        return;
-    }
-    if (goal < campaign.raised_amount) {
-        showError(`Target can't be below the amount already raised (${window.FS.formatCurrency(campaign.raised_amount, campaign.currency)}).`);
-        return;
-    }
+    const desc = inputs.description.value.trim();
 
-    campaign.title = inputs.title.value.trim();
-    campaign.tagline = inputs.tagline.value.trim();
-    campaign.description = inputs.description.value.trim();
-    campaign.goal_amount = goal;
-    campaign.currency = inputs.currency.value;
-    campaign.start_date = inputs.startDate.value || campaign.start_date;
-    campaign.end_date = inputs.endDate.value || campaign.end_date;
-    campaign.category = inputs.category.value;
+    if (!inputs.title.value.trim()) { showError("Title cannot be empty."); return; }
+    if (desc.length < 20) { showError("Description must be at least 20 characters long."); return; }
+    if (goal <= 10) { showError("Target amount must be greater than $10."); return; }
+
+    // 严格按照 ActivityUpdate Schema 组装
+    const payload = {
+        title: inputs.title.value.trim(),
+        description: desc,
+        target_amount: goal
+    };
 
     const saveBtn = document.getElementById('saveBtn');
     saveBtn.disabled = true;
-    saveBtn.innerHTML = '✓ Saved';
-    setTimeout(() => { window.location.href = 's13-my-activities.html'; }, 600);
+    saveBtn.innerHTML = 'Saving...';
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/fundraiser/activities/${campaignId}`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        let data;
+        try { data = await res.json(); } catch(e) { data = { detail: "Server error" }; }
+
+        if (!res.ok) {
+            if (res.status === 422 && data.detail && Array.isArray(data.detail)) {
+                throw new Error(`Validation Error: ${data.detail[0].msg}`);
+            }
+            throw new Error(data.detail || `HTTP Error ${res.status}`);
+        }
+
+        window.location.href = 's13-my-activities.html';
+    } catch (err) {
+        showError(err.message);
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<span>✓</span> Save changes';
+    }
 });
 
-document.getElementById('discardBtn').addEventListener('click', () => {
-    window.location.href = 's13-my-activities.html';
-});
+document.getElementById('discardBtn').addEventListener('click', () => window.location.href = 's13-my-activities.html');
 
-// ---------- Close campaign modal (screen 17) ----------
+// ========================
+// 关闭活动逻辑 (POST 请求)
+// ========================
 const closeModal = document.getElementById('closeModal');
-const closeBtn = document.getElementById('closeCampaignBtn');
-const closeBody = document.getElementById('closeBody');
-const closeCancel = document.getElementById('closeCancel');
 const closeConfirm = document.getElementById('closeConfirm');
 
-if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-        if (!campaign) return;
-        const pct = window.FS.percent(campaign.raised_amount, campaign.goal_amount);
-        closeBody.textContent = `${campaign.title} has raised ${window.FS.formatCurrency(campaign.raised_amount, campaign.currency)} of ${window.FS.formatCurrency(campaign.goal_amount, campaign.currency)} goal (${pct}%) from ${campaign.supporters} supporters.`;
-        closeModal.classList.remove('hidden');
-    });
-}
-if (closeCancel) closeCancel.addEventListener('click', () => closeModal.classList.add('hidden'));
-closeModal.addEventListener('click', (e) => { if (e.target === closeModal) closeModal.classList.add('hidden'); });
+document.getElementById('closeCampaignBtn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!campaign) return;
+    document.getElementById('closeBody').textContent = `${campaign.title} has raised $${campaign.raised_amount} so far.`;
+    closeModal.classList.remove('hidden');
+});
 
-if (closeConfirm) {
-    closeConfirm.addEventListener('click', () => {
-        if (!campaign) return;
-        campaign.status = 'Closed';
-        campaign.closed_on = new Date(window.FS.NOW).toISOString().slice(0, 10);
-        // The thank-you email checkbox is purely demonstrative — no email is sent in this mock.
-        closeModal.classList.add('hidden');
-        window.location.href = `s13-my-activities.html?status=Closed`;
-    });
-}
+document.getElementById('closeCancel')?.addEventListener('click', () => closeModal.classList.add('hidden'));
+
+closeConfirm?.addEventListener('click', async () => {
+    closeConfirm.disabled = true;
+    closeConfirm.textContent = 'Closing...';
+    try {
+        const res = await fetch(`${API_BASE_URL}/fundraiser/activities/${campaignId}/close`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        let data;
+        try { data = await res.json(); } catch(e) { data = {}; }
+
+        if (!res.ok) throw new Error(data.detail || 'Failed to close campaign');
+        window.location.href = `s13-my-activities.html`;
+    } catch (err) {
+        alert(err.message);
+        closeConfirm.disabled = false;
+        closeConfirm.textContent = '⚑ Close campaign';
+    }
+});
+
+init();

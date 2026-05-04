@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundraiser Dashboard · Fundraising System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#F8FAFC] min-h-screen text-slate-800 font-inter">
+
+    <header id="dynamicHeader" class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center sticky top-0 z-30"></header>
+
+    <main class="w-full max-w-6xl mx-auto px-6 py-10">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Campaign Analytics</h1>
+            <p class="text-slate-500 mt-2 text-sm">Monitor reach, engagement, and potential donor interest across your activities.</p>
+        </div>
+
+        <!-- 统计概览卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Reach (Views)</p>
+                <p id="totalViewsKpi" class="text-3xl font-black text-slate-900 mt-2">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-xs font-bold text-rose-500 uppercase tracking-wider">Potential Interests</p>
+                <p id="totalBookmarksKpi" class="text-3xl font-black text-rose-600 mt-2">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-xs font-bold text-blue-500 uppercase tracking-wider">Conversion Rate</p>
+                <p id="avgConvKpi" class="text-3xl font-black text-blue-600 mt-2">0%</p>
+            </div>
+        </div>
+
+        <!-- 活动管理列表：集成 S27 & S28 -->
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800">My Campaigns Traffic & Engagement</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-white border-b border-slate-100">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Campaign</th>
+                            <th class="px-6 py-4 text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50/30 text-center">Views (S27)</th>
+                            <th class="px-6 py-4 text-xs font-bold text-rose-600 uppercase tracking-wider bg-rose-50/30 text-center">Bookmarks (S28)</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="campaignTableBody" class="divide-y divide-slate-50 bg-white text-sm">
+                        <!-- 数据注入 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="logout.js"></script>
+    <script src="s14-fundraiser-dashboard.js"></script>
+</body>
+</html>
