@@ -58,11 +58,17 @@ loginForm.addEventListener('submit', async (e) => {
         const user = await profileRes.json();
         store.setItem('fs_user', JSON.stringify(user));
 
-        // 后端 role_id 约定：0 是 Admin
+        // 3. 获取个人信息以判断角色，决定跳转页面
+        
+        localStorage.setItem('fs_role_id', user.role_id);
+
+        // 判断角色，决定跳转页面
         if (user.role_id === 0) {
-            window.location.href = 's7-search&filter-admin.html'; // 管理员去Dashboard
+            window.location.href = 's7-admin-dashboard.html'; 
+        } else if (user.role_id === 1) {
+            window.location.href = 's2-donee-dashboard.html'; 
         } else {
-            window.location.href = 's3-view-profile.html'; // 普通用户去个人主页
+            window.location.href = 's14-fundraiser-dashboard.html'; 
         }
     } catch (err) {
         showError(err.message);

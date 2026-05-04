@@ -32,8 +32,15 @@
     if (confirmBtn) {
         confirmBtn.addEventListener('click', () => {
             try {
+                // Clear mock data
                 localStorage.removeItem('fs.session');
                 sessionStorage.removeItem('fs.session');
+                
+                // Clear the new version's backend integration tokens and user info
+                localStorage.removeItem('fs_token');
+                sessionStorage.removeItem('fs_token');
+                localStorage.removeItem('fs_user');
+                sessionStorage.removeItem('fs_user');
             } catch (_) { /* ignore quota or privacy-mode errors */ }
             window.location.href = 's1-login.html';
         });

@@ -3,84 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UC 60 - Approve Registrations</title>
+    <title>Pending Registrations · Admin Console</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#F8FAFC] min-h-screen text-slate-800 flex flex-col font-inter relative">
+<body class="bg-[#F8FAFC] min-h-screen text-slate-800 font-inter">
 
-    <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
-            <span class="text-lg font-bold text-slate-900">Fundraising System</span>
-            <span class="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-md font-bold ml-2">UC #60</span>
-        </div>
-        <button class="bg-[#CC0000] text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-red-700 transition">Logout</button>
-    </header>
-
-    <main class="w-full max-w-5xl mx-auto px-6 py-10">
-        
-        <!-- Normal Flow 1: Opens the registration request management page -->
-        <div class="mb-8 flex justify-between items-end">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Pending Registrations</h1>
-                <p class="text-slate-500 mt-2 text-sm">Review applicant information, assign roles, and approve or reject requests.</p>
+    <div class="flex min-h-screen">
+        <!-- 侧边栏 -->
+        <aside class="w-64 bg-slate-900 text-slate-200 flex flex-col fixed h-full z-20">
+            <div class="px-6 py-6 border-b border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">FS</div>
+                    <div>
+                        <div class="text-sm font-bold text-white">Fundraising System</div>
+                        <div class="text-xs text-slate-400">Admin Console</div>
+                    </div>
+                </div>
             </div>
-            <!-- Counter Badge -->
-            <div class="bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl flex items-center gap-2">
-                <span class="relative flex h-3 w-3">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-                </span>
-                <span id="pendingCount" class="text-sm font-bold text-amber-700">0 Pending</span>
+            <nav class="px-3 py-5 space-y-1 text-sm overflow-y-auto">
+                <p class="px-3 text-[11px] uppercase tracking-wider text-slate-500 font-bold mb-2">Main</p>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="s7-admin-dashboard.html"><span>📊</span> Dashboard</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="s7-search&filter-admin.html"><span>👥</span> Users</a>
+                <!-- Registrations 高亮 -->
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-600 text-white font-semibold" href="s10-role_assignment-admin.html"><span>📝</span> Registrations</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>📈</span> Activities</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>🏷</span> Categories</a>
+                
+                <p class="px-3 mt-6 mb-2 text-[11px] uppercase tracking-wider text-slate-500 font-bold">System</p>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="s6-create-admin.html"><span>🛡️</span> System Admins</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="s12-audit_log_review-admin.html"><span>🗂</span> Audit Logs</a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800" href="#"><span>⚙️</span> Settings</a>
+            </nav>
+            <div class="mt-auto px-3 py-4 border-t border-slate-800">
+                <button id="logoutTrigger" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-slate-800 text-slate-300">
+                    <span>↩</span> Sign out
+                </button>
             </div>
-        </div>
+        </aside>
 
-        <!-- Normal Flow 2: Displays pending registration requests -->
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Applicant Details</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Requested Role</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody" class="divide-y divide-slate-100 bg-white text-sm">
-                    <!-- JS 动态注入 pending 数据 -->
-                </tbody>
-            </table>
-        </div>
+        <main class="flex-1 ml-64 px-8 py-8 relative">
+            <div class="mb-8 flex justify-between items-end">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Pending Registrations <span class="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-md font-bold ml-2 align-middle">UC #60</span></h1>
+                    <p class="text-slate-500 mt-2 text-sm">Review applicant information, assign roles, and approve or reject requests.</p>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl flex items-center gap-2">
+                    <span class="relative flex h-3 w-3">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                    </span>
+                    <span id="pendingCount" class="text-sm font-bold text-amber-700">0 Pending</span>
+                </div>
+            </div>
 
-    </main>
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Applicant Details</th>
+                            <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Requested Role</th>
+                            <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-100 bg-white text-sm"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
 
-    <!-- ========================================== -->
-    <!-- Review & Approve Modal                     -->
-    <!-- ========================================== -->
+    <!-- Review Modal & Logout Modal 保持不变 -->
     <div id="reviewModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
-            
             <div class="px-8 py-5 border-b border-slate-100 bg-slate-50 flex justify-between">
                 <h3 class="text-xl font-bold text-slate-900">Review Application</h3>
                 <span class="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded font-bold uppercase tracking-wider">Awaiting Review</span>
             </div>
-            
-            <!-- Alternative Flow 3: Error if role not selected -->
             <div id="modalError" class="hidden mx-8 mt-5 bg-rose-50 text-rose-600 text-sm p-3 rounded-lg border border-rose-100 font-medium"></div>
-
             <div class="p-8 space-y-6">
-                <!-- Normal Flow 3: Reviews applicant's info (Read-only) -->
                 <input type="hidden" id="reviewUserId">
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
                     <p class="text-xs text-slate-400 uppercase tracking-wider font-bold mb-1">Applicant Name</p>
                     <p id="reviewName" class="text-base font-semibold text-slate-900 mb-3"></p>
-                    
                     <p class="text-xs text-slate-400 uppercase tracking-wider font-bold mb-1">Email Address</p>
                     <p id="reviewEmail" class="text-base font-semibold text-slate-900"></p>
                 </div>
-
-                <!-- Normal Flow 4: Assigns the correct system role -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Assign System Role *</label>
                     <select id="assignRole" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white">
@@ -89,32 +97,36 @@
                         <option value="Donee">Donee</option>
                         <option value="User Admin">User Admin</option>
                     </select>
-                    <p class="text-xs text-slate-500 mt-2">You must explicitly assign a role to approve this account.</p>
                 </div>
             </div>
-
-            <!-- Footer Actions -->
             <div class="px-8 py-5 border-t border-slate-100 bg-slate-50 flex justify-between items-center bg-gray-50">
-                <!-- Alternative Flow 1: Click "Reject" button -->
                 <button id="rejectBtn" class="text-rose-600 hover:text-rose-800 font-semibold text-sm hover:underline transition">Reject Application</button>
-                
                 <div class="flex gap-3">
-                    <!-- Sub-Flow 1: Keep request as pending (Cancel) -->
                     <button id="cancelBtn" class="px-5 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition">Keep Pending</button>
-                    <!-- Normal Flow 5: Click "Approve" button -->
                     <button id="approveBtn" class="px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition shadow-sm">Approve & Activate</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Normal Flow 7: Displays success message -->
+    <!-- 统一退出弹窗 -->
+    <div id="logoutModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md px-8 py-8 text-center">
+            <h3 class="text-xl font-bold text-slate-900">Sign out of Admin Console?</h3>
+            <p class="text-sm text-slate-500 mt-2">You will be securely logged out of the system.</p>
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button id="logoutCancel" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">Cancel</button>
+                <button id="logoutConfirm" class="px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 rounded-xl hover:bg-rose-700">Sign out</button>
+            </div>
+        </div>
+    </div>
+    
     <div id="toastSuccess" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-4 rounded-xl shadow-xl flex items-center gap-3 z-50">
         <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <span id="toastMsg" class="text-sm font-semibold">User account has been approved and activated.</span>
     </div>
 
-    <script src="data.js"></script>
+    <script src="logout.js"></script>
     <script src="s10-role_assignment-admin.js"></script>
 </body>
 </html>

@@ -10,101 +10,76 @@
 </head>
 <body class="bg-[#F8FAFC] min-h-screen text-slate-800 font-inter">
 
-    <header class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center">
-        <div class="flex items-center gap-8">
-            <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">F</div>
-                <span class="text-base font-bold text-slate-900">Fundraising System</span>
-            </div>
-            <nav class="hidden md:flex gap-6 text-sm text-slate-600 font-medium">
-                <span class="text-blue-600 font-semibold">Discover</span>
-                <a id="navMyActivities" href="s13-my-activities.html" class="hover:text-slate-900">My Activities</a>
-                <a href="#" class="hover:text-slate-900">History</a>
-                <a id="navProfile" href="#" class="hover:text-slate-900">Profile</a>
-            </nav>
-        </div>
-        <div class="flex items-center gap-3">
-            <div class="relative hidden md:block">
-                <span class="absolute left-3 top-2 text-slate-400 text-sm">🔍</span>
-                <input id="searchInput" type="text" placeholder="Search campaigns…" class="bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-sm w-64 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-            </div>
-            <button class="text-slate-400 hover:text-slate-700">🔔</button>
-            <button id="logoutTrigger" class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs" aria-label="Sign out">AM</button>
-        </div>
-    </header>
+    <!-- 动态头部占位符，与之前 profile 保持一致的登录体验 -->
+    <header id="dynamicHeader" class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center sticky top-0 z-30"></header>
 
     <main class="w-full max-w-6xl mx-auto px-6 py-10">
-        <!-- Greeting -->
-        <div class="flex items-end justify-between flex-wrap gap-3">
+        
+        <div class="flex justify-between items-end mb-8">
             <div>
-                <h1 id="greeting" class="text-3xl font-bold text-slate-900 tracking-tight">Discover</h1>
-                <p class="text-slate-500 mt-2 text-sm">Browse fundraisers making real impact — pick a cause and chip in.</p>
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Discover Causes</h1>
+                <p class="text-slate-500 mt-2 text-sm">Search, filter, and sort to find projects that need your help.</p>
             </div>
+            <!-- 收藏夹切换按钮 -->
+            <button id="toggleFavViewBtn" class="bg-rose-50 text-rose-600 px-4 py-2 rounded-xl text-sm font-bold border border-rose-100 hover:bg-rose-100 transition flex items-center gap-2">
+                <span>♡</span> My Favorites (<span id="favCount">0</span>)
+            </button>
         </div>
 
-        <!-- KPI strip (doner-focused) -->
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <p class="text-xs text-slate-500 font-medium">Donations made</p>
-                <p id="kpiDonations" class="text-2xl font-bold text-slate-900 mt-2">0</p>
+        <!-- 聚合控制台：S21 (分类), S22 (搜索), S23 (排序) 的完美融合 -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-8 sticky top-24 z-20 flex flex-col lg:flex-row gap-4 items-center">
+            
+            <!-- 关键词搜索 -->
+            <div class="relative w-full lg:flex-1">
+                <svg class="w-5 h-5 text-slate-400 absolute left-4 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="searchInput" placeholder="Search causes or keywords..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:bg-white transition">
             </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <p class="text-xs text-slate-500 font-medium">Saved campaigns</p>
-                <p id="kpiSaved" class="text-2xl font-bold text-slate-900 mt-2">0</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <p class="text-xs text-slate-500 font-medium">Active campaigns</p>
-                <p id="kpiActive" class="text-2xl font-bold text-slate-900 mt-2">0</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <p class="text-xs text-slate-500 font-medium">Categories live</p>
-                <p id="kpiCategories" class="text-2xl font-bold text-slate-900 mt-2">0</p>
-            </div>
-        </section>
 
-        <!-- Featured banner -->
-        <section id="featuredCard" class="hidden mt-7 bg-gradient-to-br from-blue-600 to-violet-600 rounded-2xl text-white p-7 flex items-center justify-between gap-6">
-            <div>
-                <span class="inline-flex items-center gap-1 bg-white/20 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full">⭐ Featured</span>
-                <h2 id="featuredTitle" class="text-2xl font-bold mt-3"></h2>
-                <p id="featuredTagline" class="text-sm text-white/90 mt-1.5"></p>
-                <p id="featuredMeta" class="text-xs text-white/80 mt-3"></p>
-            </div>
-            <a id="featuredCta" href="#" class="bg-white text-blue-700 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-100 transition shrink-0">Open campaign →</a>
-        </section>
-
-        <!-- Filter row -->
-        <div class="mt-7 flex flex-wrap items-center justify-between gap-3">
-            <div id="catChips" class="flex flex-wrap items-center gap-2"></div>
-            <label class="text-sm text-slate-500 inline-flex items-center gap-2">
-                <span class="hidden sm:inline">Sort:</span>
-                <select id="sortSelect" class="border border-slate-300 bg-white rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                    <option value="recent">Recently launched</option>
-                    <option value="goal">Closest to goal</option>
-                    <option value="ending">Ending soon</option>
+            <!-- 分类筛选 -->
+            <div class="w-full lg:w-48 relative">
+                 <select id="categoryFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:bg-white appearance-none cursor-pointer">
+                    <option value="">All Categories</option>
+                    <option value="1">Education</option>
+                    <option value="2">Disaster Relief</option>
+                    <option value="3">Healthcare</option>
+                    <option value="4">Animals</option>
+                    <option value="5">Environment</option>
+                    <option value="6">Community</option>
                 </select>
-            </label>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+
+            <div class="hidden lg:block w-px h-8 bg-slate-200 mx-2"></div>
+
+            <!-- 多维排序 -->
+            <div class="w-full lg:w-64 relative">
+                <select id="sortFilter" class="w-full border-2 border-blue-100 bg-blue-50/50 rounded-xl pl-4 pr-8 py-2.5 text-sm outline-none focus:border-blue-500 cursor-pointer font-bold text-slate-700 appearance-none">
+                    <option value="created_at-True">Newest First</option>
+                    <option value="created_at-False">Oldest First</option>
+                    <option value="target_amount-True">Highest Goal</option>
+                    <option value="remaining_amount-True">Most Urgent (Highest Need)</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-blue-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+            
         </div>
 
-        <p id="resultsLine" class="text-xs text-slate-500 mt-4"></p>
+        <!-- 结果方块阵列 -->
+        <div id="activitiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
-        <section id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-2"></section>
-
-        <div id="emptyState" class="hidden bg-white border border-slate-200 rounded-2xl py-16 text-center mt-2">
-            <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xl mb-3">🔍</div>
-            <p class="text-slate-700 font-semibold">No matching campaigns</p>
-            <p class="text-slate-500 text-sm mt-1">Try a different category or clear your search.</p>
+        <div id="emptyStateMsg" class="hidden py-24 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 border-dashed">
+            <p class="text-slate-600 text-sm font-bold">No campaigns match your current filters.</p>
         </div>
     </main>
 
     <!-- Logout modal -->
     <div id="logoutModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md px-8 py-8 text-center">
-            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H5a3 3 0 01-3-3V8a3 3 0 013-3h5a3 3 0 013 3v1"/></svg>
-            </div>
-            <h3 class="text-xl font-bold text-slate-900">Sign out of Fundraising System?</h3>
-            <p class="text-sm text-slate-500 mt-2">You'll need to sign in again to access your account.</p>
+            <h3 class="text-xl font-bold text-slate-900">Sign out of System?</h3>
             <div class="grid grid-cols-2 gap-3 mt-6">
                 <button id="logoutCancel" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">Cancel</button>
                 <button id="logoutConfirm" class="px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 rounded-xl hover:bg-rose-700">Sign out</button>
@@ -112,7 +87,7 @@
         </div>
     </div>
 
-    <script src="data.js"></script>
+    <!-- 挂载脚本 -->
     <script src="logout.js"></script>
     <script src="s2-donee-dashboard.js"></script>
 </body>

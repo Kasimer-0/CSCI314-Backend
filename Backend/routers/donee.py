@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 from datetime import datetime, timezone
+from pydantic import BaseModel
 
 import schemas
 from database import supabase
@@ -79,3 +80,41 @@ def get_category_popularity():
         },
         "message": "Data aggregated successfully."
     }
+class DonationRequest(BaseModel):
+    amount: float
+    message: Optional[str] = None
+    anonymous: bool = False
+    
+@router.post("/activities/{activity_id}/donate")
+def donate_to_activity(activity_id: int, request: DonationRequest, current_user: dict = Depends(get_current_donee)):
+    # 1. 查询活动当前状态和已筹金额
+    response = supabase.table("activities").select("current_amount, status").eq("activity_id", activity_id).execute()
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Activity not found")
+        
+    activity = response.data[0]
+    
+    # 防止向已经关闭的项目捐款
+    if activity["status"] != "Ongoing":
+        raise HTTPException(status_code=400, detail="This activity is closed and no longer accepts donations.")
+        
+    # 2. 计算累加后的新金额
+    current_amount = float(activity.get("current_amount") or 0)
+    new_amount = current_amount + request.amount
+    
+    # 3. 更新数据库中的总金额
+    update_res = supabase.table("activities").update({"current_amount": new_amount}).eq("activity_id", activity_id).execute()
+    if not update_res.data:
+        raise HTTPException(status_code=500, detail="Failed to process donation")
+        
+    # 可选：如果你在数据库里建了 donations 表，可以在这里插入一条明细流水
+    # supabase.table("donations").insert({
+    #     "activity_id": activity_id, 
+    #     "user_id": current_user["user_id"], 
+    #     "amount": request.amount, 
+    #     "message": request.message, 
+    #     "is_anonymous": request.anonymous, 
+    #     "created_at": datetime.now(timezone.utc).isoformat()
+    # }).execute()
+    
+    return {"message": "Donation successful", "new_amount": new_amount}

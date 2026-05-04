@@ -1,130 +1,108 @@
-/* ========================================================
-   S26 - View Category Popularity Charts (Donee)
-   ======================================================== */
+// s26-view-charts-donee.js
+const API_BASE_URL = 'http://127.0.0.1:8000';
+const token = localStorage.getItem('fs_token') || sessionStorage.getItem('fs_token');
+if (!token) window.location.href = 's1-login.html';
 
-// --- 1. System Mock Data (Categorized aggregation representations) ---
-const dbDataMocks = {
-    allTime: { 'Medical': 150, 'Disaster Relief': 120, 'Education': 90, 'Animal Welfare': 30, 'Environment': 15 },
-    last30Days: { 'Medical': 60, 'Disaster Relief': 80, 'Education': 20, 'Animal Welfare': 5, 'Environment': 0 },
-    last7Days: { 'Medical': 10, 'Disaster Relief': 45, 'Education': 2, 'Animal Welfare': 0, 'Environment': 0 }
-};
+const roleId = parseInt(localStorage.getItem('fs_role_id') || '1', 10);
+const initials = localStorage.getItem('fs_initials') || 'US';
 
-// --- 2. DOM & Chart Scope ---
-const timeframeFilter = document.getElementById('timeframeFilter');
-const loadingOverlay = document.getElementById('loadingOverlay');
-const emptyStateBox = document.getElementById('emptyStateBox');
-const errorStateBox = document.getElementById('errorStateBox');
-const chartContainer = document.getElementById('chartContainer');
+let myChartInstance = null;
 
-let myChartInstance = null; // Store chart globally to destroy/re-render
+// 1. 动态生成头部导航栏 (同步系统中已有的 Donee 样式)
+function renderDynamicHeader() {
+    const header = document.getElementById('dynamicHeader');
+    if (!header) return;
 
-// --- 3. Core Engine: Fetch & Render (Normal Flow 2-5) ---
-function loadChartData(timeframe) {
-    // Show Loading Spinner first
-    loadingOverlay.classList.remove('hidden');
-    emptyStateBox.classList.add('hidden');
-    errorStateBox.classList.add('hidden');
-    chartContainer.style.opacity = '0'; // Hide old chart softly
+    header.innerHTML = `
+        <div class="flex items-center gap-8">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">FS</div>
+                <span class="text-base font-bold text-slate-900 font-bold">Fundraising System</span>
+                <span class="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ml-1">Donee</span>
+            </div>
+            <nav class="hidden md:flex gap-6 text-sm text-slate-600 font-medium">
+                <a href="s2-donee-dashboard.html" class="hover:text-slate-900 transition-colors">Discover</a>
+                <a href="#" class="text-blue-600 font-semibold border-b-2 border-blue-600 pb-4 -mb-4 transition-colors">Platform Insights</a>
+                <a href="s3-view-profile.html" class="hover:text-slate-900 transition-colors">Profile</a>
+            </nav>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="logoutTrigger" class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center justify-center font-bold text-xs shadow-sm">${initials}</button>
+        </div>
+    `;
 
-    // Mock Backend Network/Processing Delay (System calculating proportion ranking...)
     setTimeout(() => {
-        // --- Alternative Flow 1: Insufficient Data Collection ---
-        if (timeframe === 'emptyTest') {
-            loadingOverlay.classList.add('hidden');
-            emptyStateBox.classList.remove('hidden');
-            return;
-        }
-
-        // --- Alternative Flow 2: Aggregation Timeout / Server Overload ---
-        if (timeframe === 'errorTest') {
-            loadingOverlay.classList.add('hidden');
-            errorStateBox.classList.remove('hidden');
-            return;
-        }
-
-        // --- Normal Flow: Process Data ---
-        const rawData = dbDataMocks[timeframe];
-        const labels = Object.keys(rawData);
-        const dataValues = Object.values(rawData);
-        
-        // Calculate Total purely for Sub-flow 1a mathematical presentation
-        const totalCampaigns = dataValues.reduce((a, b) => a + b, 0);
-
-        renderPieChart(labels, dataValues, totalCampaigns);
-
-        loadingOverlay.classList.add('hidden');
-        chartContainer.style.opacity = '1';
-
-    }, 800); // 0.8s fake massive server aggregation delay
+        document.getElementById('logoutTrigger')?.addEventListener('click', () => {
+            document.getElementById('logoutModal')?.classList.remove('hidden');
+        });
+    }, 100);
 }
 
-// --- 4. Post-Condition 2 & Sub-Flow 1a: Chart.js Configuration ---
-function renderPieChart(labels, dataValues, totalSum) {
-    const ctx = document.getElementById('popularityChart').getContext('2d');
+// 2. 调用后端接口获取真实统计数据
+async function fetchPopularityData() {
+    const loading = document.getElementById('loadingOverlay');
+    loading.classList.remove('hidden');
 
-    // Destroy old chart instance to avoid overlap ghosting
-    if (myChartInstance) {
-        myChartInstance.destroy();
+    try {
+        const res = await fetch(`${API_BASE_URL}/donee/dashboard/category-popularity`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Failed to load chart data");
+        
+        const data = await res.json();
+        const labels = data.chart_data.labels;
+        const values = data.chart_data.activity_counts;
+        
+        if (labels.length === 0) {
+            document.getElementById('emptyStateBox').classList.remove('hidden');
+        } else {
+            renderDoughnutChart(labels, values);
+        }
+    } catch (err) {
+        console.error(err);
+    } finally {
+        loading.classList.add('hidden');
     }
+}
 
-    // Modern color palette definition
-    const bgColors = ['#6366f1', '#f43f5e', '#10b981', '#f59e0b', '#8b5cf6'];
-    const hoverColors = ['#4f46e5', '#e11d48', '#059669', '#d97706', '#7c3aed'];
+// 3. 渲染 Chart.js
+function renderDoughnutChart(labels, dataValues) {
+    const ctx = document.getElementById('popularityChart').getContext('2d');
+    if (myChartInstance) myChartInstance.destroy();
 
-    // Instantiating the third-party charting library
+    const totalSum = dataValues.reduce((a, b) => a + b, 0);
+
     myChartInstance = new Chart(ctx, {
-        type: 'doughnut', // 'doughnut' looks far more modern than 'pie' in UI dashboards
+        type: 'doughnut',
         data: {
             labels: labels,
             datasets: [{
                 data: dataValues,
-                backgroundColor: bgColors,
-                hoverBackgroundColor: hoverColors,
-                borderWidth: 3,
-                borderColor: '#ffffff',
-                hoverOffset: 10
+                backgroundColor: ['#6366f1', '#f43f5e', '#10b981', '#f59e0b', '#8b5cf6', '#0ea5e9'],
+                borderWidth: 2,
+                hoverOffset: 15
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '65%', // Thins out the donut ring
+            cutout: '70%',
             plugins: {
-                legend: {
-                    position: 'right',
-                    labels: { font: { family: 'Inter, sans-serif', size: 13, weight: '500' }, color: '#475569', padding: 20 }
-                },
-                // SUB-FLOW 1A: Interact with Chart Tooltips
+                legend: { position: 'right', labels: { font: { weight: '600' }, padding: 20 } },
                 tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                    titleFont: { family: 'Inter, sans-serif', size: 14 },
-                    bodyFont: { family: 'Inter, sans-serif', size: 13, weight: 'bold' },
-                    padding: 16,
-                    cornerRadius: 12,
-                    displayColors: true,
                     callbacks: {
-                        // Dynamically generates an overlay tooltip displaying exact hard numbers
                         label: function(context) {
-                            const value = context.raw;
-                            const percentage = ((value / totalSum) * 100).toFixed(1);
-                            // Output Format e.g., " Disaster Relief: 35%, 150 active campaigns"
-                            return ` ${percentage}%, ${value} active campaigns`;
+                            const val = context.raw;
+                            const pct = ((val / totalSum) * 100).toFixed(1);
+                            return ` ${pct}% (${val} activities)`;
                         }
                     }
                 }
-            },
-            animation: {
-                animateScale: true,
-                animateRotate: true
             }
         }
     });
 }
 
-// --- 5. Sub-Flow 1b: Filter by Timeframe ---
-timeframeFilter.addEventListener('change', (e) => {
-    loadChartData(e.target.value);
-});
-
-// Initial Page Load Pipeline
-loadChartData('allTime');
+// 初始化
+renderDynamicHeader();
+fetchPopularityData();

@@ -1,139 +1,180 @@
-// US — Donee landing / Discover page.
-// Lists every Ongoing campaign (any fundraiser), with category-chip filter, search, and sort.
-// View → s20 detail. Donee KPIs come from user.stats; defaults to Aisha Mensah for the demo.
+const API_BASE_URL = 'http://127.0.0.1:8000';
+const token = localStorage.getItem('fs_token') || sessionStorage.getItem('fs_token');
+if (!token) window.location.href = 's1-login.html';
 
-const session = window.FS.getSession();
-const viewer = (session && window.FS.findUserById(session.userId)) || window.FS.findUserById(6);
+let bookmarkedIds = new Set();
+let isShowingOnlyFavorites = false;
 
-if (viewer) {
-    document.getElementById('logoutTrigger').textContent = window.FS.initials(viewer.username);
-    document.getElementById('navProfile').href = `s3-view-profile.html?userId=${viewer.user_id}`;
-    document.getElementById('greeting').textContent = `Welcome back, ${viewer.first_name || viewer.username.split(' ')[0]}`;
+// 1. 动态头部渲染
+function renderDynamicHeader() {
+    const header = document.getElementById('dynamicHeader');
+    if (!header) return;
+    const roleId = parseInt(localStorage.getItem('fs_role_id') || '1', 10);
+    const initials = localStorage.getItem('fs_initials') || 'DN'; // 可以在 s1-login 存一下名字
+
+    header.innerHTML = `
+        <div class="flex items-center gap-8">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">FS</div>
+                <span class="text-base font-bold text-slate-900">Fundraising System</span>
+                <span class="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ml-1">Donee</span>
+            </div>
+            <nav class="hidden md:flex gap-6 text-sm text-slate-600 font-medium">
+                <a href="#" class="text-blue-600 font-semibold border-b-2 border-blue-600 pb-4 -mb-4 transition-colors">Discover</a>
+                <a href="s26-view-charts-donee.html" class="hover:text-slate-900 transition-colors">Platform Insights</a>
+                <a href="s3-view-profile.html" class="hover:text-slate-900 transition-colors">Profile</a>
+            </nav>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="logoutTrigger" class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center justify-center font-bold text-xs shadow-sm">${initials}</button>
+        </div>
+    `;
+
+    setTimeout(() => {
+        document.getElementById('logoutTrigger')?.addEventListener('click', () => {
+            document.getElementById('logoutModal')?.classList.remove('hidden');
+        });
+    }, 100);
 }
 
-// ---------- KPIs ----------
-const stats = (viewer && viewer.stats) || { donations: 0, saved: 0, active: 0 };
-const ongoing = campaignsData.filter(c => c.status === 'Ongoing');
-const distinctCats = new Set(ongoing.map(c => c.category));
-
-document.getElementById('kpiDonations').textContent = stats.donations.toString();
-document.getElementById('kpiSaved').textContent = stats.saved.toString();
-document.getElementById('kpiActive').textContent = ongoing.length.toString();
-document.getElementById('kpiCategories').textContent = distinctCats.size.toString();
-
-// ---------- Featured (highest progress among Ongoing) ----------
-if (ongoing.length) {
-    const top = ongoing.slice().sort((a, b) =>
-        window.FS.percent(b.raised_amount, b.goal_amount) - window.FS.percent(a.raised_amount, a.goal_amount)
-    )[0];
-    const card = document.getElementById('featuredCard');
-    document.getElementById('featuredTitle').textContent = top.title;
-    document.getElementById('featuredTagline').textContent = top.tagline || '';
-    const days = window.FS.daysLeft(top.end_date);
-    document.getElementById('featuredMeta').textContent =
-        `${window.FS.formatCurrency(top.raised_amount, top.currency)} of ${window.FS.formatCurrency(top.goal_amount, top.currency)} raised · ${window.FS.percent(top.raised_amount, top.goal_amount)}% · ${days != null ? days + ' days left' : 'no end date'}`;
-    document.getElementById('featuredCta').href = `s20-campaign-detail.html?campaignId=${top.campaign_id}`;
-    card.classList.remove('hidden');
+// 2. 获取用户现有的收藏列表
+async function fetchBookmarks() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/donee/bookmarks`, { headers: { 'Authorization': `Bearer ${token}` }});
+        if (res.ok) {
+            const data = await res.json();
+            bookmarkedIds = new Set(data.map(b => b.activities.activity_id));
+            document.getElementById('favCount').textContent = bookmarkedIds.size;
+        }
+    } catch (e) { console.error(e); }
 }
 
-// ---------- Category chips ----------
-const CATEGORIES = ['All', 'Education', 'Disaster Relief', 'Healthcare', 'Animals', 'Environment', 'Community'];
-let activeCategory = (new URLSearchParams(window.location.search).get('category')) || 'All';
-if (!CATEGORIES.includes(activeCategory)) activeCategory = 'All';
-let searchQuery = '';
+// 3. 请求接口：组合搜索、分类、排序
+async function fetchActivities() {
+    const grid = document.getElementById('activitiesGrid');
+    const emptyState = document.getElementById('emptyStateMsg');
+    
+    // 获取表单参数
+    const keyword = document.getElementById('searchInput').value.trim();
+    const catId = document.getElementById('categoryFilter').value;
+    const sortVal = document.getElementById('sortFilter').value.split('-'); // e.g. ["created_at", "True"]
+    const sortBy = sortVal[0];
+    const sortDesc = sortVal[1];
 
-function chipsHTML() {
-    return CATEGORIES.map(cat => {
-        const isActive = cat === activeCategory;
-        const tone = isActive ? 'bg-blue-600 text-white border-blue-600'
-                              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50';
-        return `<button data-cat="${cat}" class="cat-chip border ${tone} px-3.5 py-1.5 rounded-full text-sm font-semibold transition">${cat}</button>`;
-    }).join('');
+    let url = `${API_BASE_URL}/activities?sort_by=${sortBy}&sort_desc=${sortDesc}`;
+    if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+    if (catId) url += `&category_id=${catId}`;
+
+    try {
+        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` }});
+        if (!res.ok) throw new Error("Failed to fetch activities");
+        let activities = await res.json();
+
+        // 如果开启了只看收藏模式，在前端进行过滤
+        if (isShowingOnlyFavorites) {
+            activities = activities.filter(act => bookmarkedIds.has(act.activity_id));
+        }
+
+        grid.innerHTML = '';
+        if (activities.length === 0) {
+            emptyState.classList.remove('hidden');
+            return;
+        }
+        emptyState.classList.add('hidden');
+
+        const categoryMapReverse = { 1: 'Education', 2: 'Disaster Relief', 3: 'Healthcare', 4: 'Animals', 5: 'Environment', 6: 'Community' };
+        
+        activities.forEach(act => {
+            const catName = categoryMapReverse[act.category_id] || 'Community';
+            const progress = Math.min(100, Math.round(((act.current_amount || 0) / act.target_amount) * 100));
+            const isFaved = bookmarkedIds.has(act.activity_id);
+            
+            // 收藏爱心 SVG
+            const heartSvg = isFaved 
+                ? `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" class="w-6 h-6 text-rose-500 transition-colors drop-shadow-sm"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
+                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-6 h-6 text-slate-400 group-hover:text-rose-400 transition-colors"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`;
+
+            const card = `
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition duration-300 flex flex-col h-full cursor-pointer relative" onclick="window.location.href='s20-campaign-detail.html?campaignId=${act.activity_id}'">
+                    
+                    <button class="heart-trigger absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur rounded-full shadow-sm hover:bg-rose-50 hover:scale-110 transition z-10 group" 
+                            data-id="${act.activity_id}">
+                        ${heartSvg}
+                    </button>
+
+                    <div class="h-32 bg-slate-50 flex items-center justify-center text-4xl border-b border-slate-100">🖼</div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <span class="bg-blue-50 text-blue-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded w-max mb-2">${catName}</span>
+                        <h3 class="text-base font-bold text-slate-900 mb-1 leading-tight">${act.title}</h3>
+                        <div class="mt-auto pt-4">
+                            <div class="flex justify-between items-center text-[11px] font-bold mb-2">
+                                <span class="text-blue-600">$${(act.current_amount || 0).toLocaleString()} raised</span>
+                                <span class="text-slate-500">$${act.target_amount.toLocaleString()} goal</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-1.5">
+                                <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            grid.insertAdjacentHTML('beforeend', card);
+        });
+
+        // 绑定收藏点击事件
+        document.querySelectorAll('.heart-trigger').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation(); // 阻止卡片本身的点击跳转
+                const actId = parseInt(btn.getAttribute('data-id'));
+                toggleBookmark(actId);
+            });
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
 }
-const chipStrip = document.getElementById('catChips');
-chipStrip.innerHTML = chipsHTML();
-chipStrip.addEventListener('click', (e) => {
-    const btn = e.target.closest('.cat-chip');
-    if (!btn) return;
-    activeCategory = btn.dataset.cat;
-    const url = new URL(window.location.href);
-    if (activeCategory === 'All') url.searchParams.delete('category');
-    else url.searchParams.set('category', activeCategory);
-    window.history.replaceState(null, '', url);
-    chipStrip.innerHTML = chipsHTML();
-    renderCards();
+
+// 4. 发送书签请求
+async function toggleBookmark(activityId) {
+    try {
+        const res = await fetch(`${API_BASE_URL}/donee/bookmarks`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ activity_id: activityId })
+        });
+        
+        if (res.ok) {
+            const data = await res.json();
+            if (data.is_bookmarked) {
+                bookmarkedIds.add(activityId);
+            } else {
+                bookmarkedIds.delete(activityId);
+            }
+            document.getElementById('favCount').textContent = bookmarkedIds.size;
+            fetchActivities(); // 刷新视图
+        }
+    } catch (e) { console.error(e); }
+}
+
+// 5. 事件监听器绑定
+document.getElementById('searchInput').addEventListener('input', () => { setTimeout(fetchActivities, 400); });
+document.getElementById('categoryFilter').addEventListener('change', fetchActivities);
+document.getElementById('sortFilter').addEventListener('change', fetchActivities);
+
+document.getElementById('toggleFavViewBtn').addEventListener('click', (e) => {
+    isShowingOnlyFavorites = !isShowingOnlyFavorites;
+    const btn = e.currentTarget;
+    if (isShowingOnlyFavorites) {
+        btn.classList.replace('bg-rose-50', 'bg-rose-600');
+        btn.classList.replace('text-rose-600', 'text-white');
+    } else {
+        btn.classList.replace('bg-rose-600', 'bg-rose-50');
+        btn.classList.replace('text-white', 'text-rose-600');
+    }
+    fetchActivities();
 });
 
-// ---------- Search & sort ----------
-const searchInput = document.getElementById('searchInput');
-searchInput.addEventListener('input', () => { searchQuery = searchInput.value.trim().toLowerCase(); renderCards(); });
-const sortSelect = document.getElementById('sortSelect');
-sortSelect.addEventListener('change', renderCards);
-
-// ---------- Cards ----------
-const cardsGrid = document.getElementById('cardsGrid');
-const emptyState = document.getElementById('emptyState');
-const resultsLine = document.getElementById('resultsLine');
-
-function visibleCampaigns() {
-    let list = ongoing.slice();
-    if (activeCategory !== 'All') list = list.filter(c => c.category === activeCategory);
-    if (searchQuery) {
-        list = list.filter(c =>
-            c.title.toLowerCase().includes(searchQuery) ||
-            (c.tagline || '').toLowerCase().includes(searchQuery));
-    }
-    const sort = sortSelect.value;
-    if (sort === 'goal') {
-        list.sort((a, b) => window.FS.percent(b.raised_amount, b.goal_amount) - window.FS.percent(a.raised_amount, a.goal_amount));
-    } else if (sort === 'ending') {
-        list.sort((a, b) => (window.FS.daysLeft(a.end_date) || 0) - (window.FS.daysLeft(b.end_date) || 0));
-    } else {
-        list.sort((a, b) => new Date(b.start_date || 0) - new Date(a.start_date || 0));
-    }
-    return list;
-}
-
-function progressBar(c) {
-    const pct = Math.min(100, window.FS.percent(c.raised_amount, c.goal_amount));
-    return `
-        <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mt-3">
-            <div class="bg-blue-600 h-full rounded-full" style="width:${pct}%"></div>
-        </div>`;
-}
-
-function cardHTML(c) {
-    const cover = window.FS.coverPalette[c.cover_color] || window.FS.coverPalette.blue;
-    const catTone = window.FS.categoryStyles[c.category] || 'bg-slate-100 text-slate-700';
-    const days = window.FS.daysLeft(c.end_date);
-    return `
-        <a href="s20-campaign-detail.html?campaignId=${c.campaign_id}" class="bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col hover:shadow-md hover:border-blue-200 transition">
-            <div class="${cover.bg} h-32 flex items-center justify-center ${cover.icon} text-5xl">🖼</div>
-            <div class="p-5 flex flex-col flex-1">
-                <span class="inline-flex w-fit px-2.5 py-1 rounded-full text-[11px] font-semibold ${catTone}">${c.category}</span>
-                <h3 class="text-base font-bold text-slate-900 mt-3 leading-snug">${c.title}</h3>
-                <p class="text-sm text-slate-500 mt-1.5 line-clamp-2">${c.tagline || ''}</p>
-                ${progressBar(c)}
-                <p class="text-xs text-slate-500 mt-2">${window.FS.formatCurrency(c.raised_amount, c.currency)} of ${window.FS.formatCurrency(c.goal_amount, c.currency)} raised · ${window.FS.percent(c.raised_amount, c.goal_amount)}%${days != null ? ' · ' + days + ' days left' : ''}</p>
-                <div class="flex items-center justify-between text-sm pt-3 mt-auto border-t border-slate-100">
-                    <span class="text-slate-500">${c.supporters} supporters</span>
-                    <span class="text-blue-600 font-semibold">View →</span>
-                </div>
-            </div>
-        </a>`;
-}
-
-function renderCards() {
-    const list = visibleCampaigns();
-    resultsLine.textContent = `Showing ${list.length} of ${ongoing.length} active campaigns${activeCategory !== 'All' ? ' in ' + activeCategory : ''}${searchQuery ? ' matching "' + searchQuery + '"' : ''}`;
-
-    if (!list.length) {
-        cardsGrid.innerHTML = '';
-        emptyState.classList.remove('hidden');
-        return;
-    }
-    emptyState.classList.add('hidden');
-    cardsGrid.innerHTML = list.map(cardHTML).join('');
-}
-
-renderCards();
+// 初始化
+renderDynamicHeader();
+fetchBookmarks().then(() => fetchActivities());

@@ -3,175 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campaign · Fundraising System</title>
+    <title>Campaign Detail · Fundraising System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 确保 Tailwind 脚本加载 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-[#F8FAFC] min-h-screen text-slate-800 font-inter">
 
-    <header class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center">
-        <div class="flex items-center gap-8">
-            <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">F</div>
-                <span class="text-base font-bold text-slate-900">Fundraising System</span>
-            </div>
-            <nav class="hidden md:flex gap-6 text-sm text-slate-600 font-medium">
-                <span class="text-blue-600 font-semibold">Discover</span>
-                <a id="navMyActivities" href="s13-my-activities.html" class="hover:text-slate-900">My Activities</a>
-                <a href="#" class="hover:text-slate-900">History</a>
-                <a id="navProfile" href="#" class="hover:text-slate-900">Profile</a>
-            </nav>
-        </div>
-        <div class="flex items-center gap-3">
-            <button class="text-slate-400 hover:text-slate-700">🔍</button>
-            <button class="text-slate-400 hover:text-slate-700">🔔</button>
-            <button id="logoutTrigger" class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs" aria-label="Sign out">AM</button>
-        </div>
-    </header>
+    <!-- 动态导航栏容器 -->
+    <header id="dynamicHeader" class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center sticky top-0 z-30"></header>
 
     <main class="w-full max-w-6xl mx-auto px-6 py-10">
-        <p class="text-sm text-slate-500"><a href="#" class="hover:text-blue-600">Discover</a> <span class="mx-1.5 text-slate-400">/</span> <a id="crumbCategory" href="#" class="hover:text-blue-600"></a> <span class="mx-1.5 text-slate-400">/</span> <span id="crumbCampaign" class="text-slate-900 font-semibold"></span></p>
+        <!-- 面包屑导航 -->
+        <p class="text-sm text-slate-500 mb-6">
+            <a href="s2-donee-dashboard.html" class="hover:text-blue-600">Discover</a> 
+            <span class="mx-1.5 text-slate-400">/</span> 
+            <span id="crumbCategory" class="text-slate-400">Category</span> 
+            <span class="mx-1.5 text-slate-400">/</span> 
+            <span id="crumbCampaign" class="text-slate-900 font-semibold italic">Campaign Title</span>
+        </p>
 
         <div id="notFoundBox" class="hidden mt-5 bg-amber-50 text-amber-700 text-sm p-4 rounded-xl border border-amber-100"></div>
 
-        <div id="layout" class="hidden grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 mt-6">
-            <!-- Main content -->
+        <div id="layout" class="hidden grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 mt-6">
+            <!-- 左侧主内容 -->
             <div class="space-y-6">
-                <div id="hero" class="rounded-2xl h-72 flex items-center justify-center text-7xl bg-blue-100 text-blue-300">📖</div>
+                <!-- 活动大图/图标区 -->
+                <div id="hero" class="rounded-3xl h-80 flex items-center justify-center text-8xl bg-white border border-slate-200 shadow-sm transition-all"></div>
 
-                <article class="bg-white rounded-2xl border border-slate-200 p-7">
-                    <span id="categoryPill" class="inline-flex w-fit px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-700">Education</span>
-                    <h1 id="title" class="text-3xl font-bold text-slate-900 mt-3 leading-tight"></h1>
-                    <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                        <span class="flex items-center gap-2">
-                            <span id="creatorAvatar" class="w-7 h-7 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-[11px] font-bold">--</span>
-                            <span class="text-slate-600">Created by</span>
-                            <span id="creatorName" class="text-slate-900 font-semibold"></span>
-                        </span>
-                        <span id="verifiedPill" class="hidden inline-flex items-center gap-1 text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">✓ Verified Fundraiser</span>
+                <article class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+                    <span id="categoryPill" class="inline-flex px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider">Category</span>
+                    <h1 id="title" class="text-4xl font-extrabold text-slate-900 mt-4 leading-tight"></h1>
+                    
+                    <div class="mt-4 flex items-center gap-3">
+                        <div id="creatorAvatar" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold"></div>
+                        <p class="text-sm text-slate-600">Created by <span id="creatorName" class="text-slate-900 font-bold"></span></p>
+                        <span id="verifiedPill" class="hidden inline-flex items-center gap-1 text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">✓ Verified</span>
                     </div>
 
-                    <div class="mt-7 flex items-end justify-between gap-4">
-                        <div>
-                            <p class="text-3xl font-bold text-slate-900" id="raisedFigure"></p>
-                            <p class="text-xs text-slate-500" id="raisedSub"></p>
+                    <div class="mt-10">
+                        <div class="flex items-end justify-between mb-4">
+                            <div>
+                                <p id="raisedFigure" class="text-4xl font-black text-slate-900"></p>
+                                <p id="raisedSub" class="text-sm text-slate-500 font-medium mt-1"></p>
+                            </div>
+                            <p id="percentFigure" class="text-3xl font-black text-blue-600"></p>
                         </div>
-                        <p class="text-2xl font-bold text-blue-600" id="percentFigure"></p>
-                    </div>
-                    <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden mt-3">
-                        <div id="progressBar" class="bg-blue-600 h-full" style="width:0%"></div>
-                    </div>
-
-                    <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-5 text-sm text-slate-600">
-                        <span class="flex items-center gap-1.5">👥 <span id="metaSupporters"></span></span>
-                        <span id="metaTimeWrap" class="flex items-center gap-1.5">⏱ <span id="metaTime"></span></span>
-                        <span id="metaLocationWrap" class="flex items-center gap-1.5">📍 <span id="metaLocation"></span></span>
+                        <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div id="progressBar" class="bg-blue-600 h-full transition-all duration-1000" style="width:0%"></div>
+                        </div>
                     </div>
 
-                    <hr class="border-slate-100 my-7">
-
-                    <h2 class="text-base font-bold text-slate-900">About this campaign</h2>
-                    <p id="description" class="text-sm text-slate-600 mt-3 leading-relaxed"></p>
-
-                    <div id="bulletWrap" class="hidden mt-5">
-                        <p class="text-sm font-bold text-slate-900">What your donation funds</p>
-                        <ul id="bulletList" class="mt-2 space-y-1.5 text-sm text-slate-600 list-disc pl-5"></ul>
+                    <div class="mt-6 pt-6 border-t border-slate-100 flex gap-6 text-sm text-slate-500 font-semibold">
+                        <span class="flex items-center gap-2">👥 <span id="metaSupporters">0</span></span>
+                        <span class="flex items-center gap-2">⏱ 60 days left</span>
+                        <span class="flex items-center gap-2">📍 Global Relief</span>
                     </div>
 
-                    <p id="closingNote" class="hidden italic text-sm text-slate-500 mt-5"></p>
-                </article>
+                    <hr class="my-8 border-slate-100">
 
-                <!-- Recent supporters -->
-                <article id="supportersCard" class="hidden bg-white rounded-2xl border border-slate-200 p-7">
-                    <div class="flex items-center justify-between mb-3">
-                        <h2 class="text-base font-bold text-slate-900">Recent supporters</h2>
-                        <a id="viewAllLink" href="#" class="text-sm text-blue-600 font-semibold hover:underline"></a>
-                    </div>
-                    <ul id="supportersList" class="divide-y divide-slate-100"></ul>
+                    <h2 class="text-xl font-bold text-slate-900 mb-4">About this campaign</h2>
+                    <p id="description" class="text-slate-600 leading-relaxed whitespace-pre-wrap"></p>
                 </article>
             </div>
 
-            <!-- Donate rail -->
-            <aside class="self-start lg:sticky lg:top-6 space-y-4">
-                <div class="bg-white rounded-2xl border border-slate-200 p-6">
-                    <h3 class="text-base font-bold text-slate-900">Support this campaign</h3>
-                    <p class="text-xs text-slate-500 mt-1">Every donation brings us closer to our goal</p>
+            <!-- 右侧捐款区 -->
+            <aside class="self-start lg:sticky lg:top-28 space-y-4">
+                <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+                    <h3 class="text-lg font-bold text-slate-900">Support this cause</h3>
+                    <p class="text-xs text-slate-500 mt-1">Directly impact this mission</p>
 
-                    <div id="donationStateBlock" class="mt-5">
-                        <label class="block text-xs font-semibold text-slate-700 mb-1.5">Donation amount</label>
+                    <div id="donationStateBlock" class="mt-6">
                         <div class="relative">
-                            <span class="absolute left-4 top-2.5 text-slate-400">$</span>
-                            <input id="amount" type="number" min="1" value="50" class="w-full border border-slate-300 rounded-xl pl-8 pr-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                        </div>
-                        <div class="grid grid-cols-4 gap-2 mt-3">
-                            <button class="preset border rounded-lg px-2 py-1.5 text-xs font-semibold" data-amount="25">$25</button>
-                            <button class="preset border rounded-lg px-2 py-1.5 text-xs font-semibold" data-amount="50">$50</button>
-                            <button class="preset border rounded-lg px-2 py-1.5 text-xs font-semibold" data-amount="100">$100</button>
-                            <button class="preset border rounded-lg px-2 py-1.5 text-xs font-semibold" data-amount="250">$250</button>
+                            <span class="absolute left-4 top-3 text-slate-400 font-bold">$</span>
+                            <input id="amount" type="number" value="50" class="w-full border-2 border-slate-100 bg-slate-50 rounded-2xl pl-8 pr-4 py-3 text-lg font-bold outline-none focus:border-blue-500 focus:bg-white transition-all">
                         </div>
 
-                        <label class="block text-xs font-semibold text-slate-700 mb-1.5 mt-4">Add a message (optional)</label>
-                        <textarea id="message" rows="3" placeholder="Words of encouragement go a long way…" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 resize-none"></textarea>
+                        <div class="grid grid-cols-4 gap-2 mt-4">
+                            <button class="preset border border-slate-200 rounded-xl py-2 text-xs font-bold hover:bg-slate-50 transition" data-amount="25">$25</button>
+                            <button class="preset border border-slate-200 rounded-xl py-2 text-xs font-bold hover:bg-slate-50 transition" data-amount="50">$50</button>
+                            <button class="preset border border-slate-200 rounded-xl py-2 text-xs font-bold hover:bg-slate-50 transition" data-amount="100">$100</button>
+                            <button class="preset border border-slate-200 rounded-xl py-2 text-xs font-bold hover:bg-slate-50 transition" data-amount="250">$250</button>
+                        </div>
 
-                        <label class="flex items-center gap-2 text-sm text-slate-700 mt-3">
+                        <textarea id="message" rows="3" placeholder="Add a personal message..." class="w-full mt-4 border-2 border-slate-100 bg-slate-50 rounded-2xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all resize-none"></textarea>
+
+                        <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 mt-4 cursor-pointer">
                             <input type="checkbox" id="anonCheck" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
                             Make my donation anonymous
                         </label>
 
-                        <button id="donateBtn" class="mt-4 w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-blue-700 shadow-sm flex items-center justify-center gap-2">♡ Donate now</button>
-                        <p class="text-[11px] text-slate-500 mt-2 text-center">🔒 Secure payment · 100% to campaign</p>
+                        <button id="donateBtn" class="mt-6 w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-[0.98]">
+                            ♡ Donate now
+                        </button>
                     </div>
 
-                    <!-- Closed/Completed/Draft fallback -->
-                    <div id="donationDisabled" class="hidden mt-5 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
-                        <p id="disabledMsg" class="font-semibold text-slate-700"></p>
-                        <p class="text-xs text-slate-500 mt-1">Thanks for stopping by — share this story with your network or browse other active campaigns.</p>
+                    <div id="donationDisabled" class="hidden mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-5 text-sm text-slate-600">
+                        <p id="disabledMsg" class="font-bold text-slate-900"></p>
                     </div>
                 </div>
 
                 <div class="flex gap-2">
-                    <button class="flex-1 bg-white border border-slate-300 text-slate-700 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 flex items-center justify-center gap-1">🔖 Save</button>
-                    <div class="flex-1 bg-white border border-slate-300 text-slate-700 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
-                        <span>Share</span>
-                        <span class="text-slate-400">🔗</span>
-                        <span class="text-slate-400">𝕏</span>
-                        <span class="text-slate-400">f</span>
-                    </div>
-                </div>
-
-                <div id="verifiedCallout" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3">
-                    <span class="text-emerald-600 mt-0.5">✓</span>
-                    <div>
-                        <p class="text-sm font-semibold text-emerald-700">Verified fundraiser</p>
-                        <p class="text-xs text-emerald-700/90 mt-0.5">Identity confirmed and tax-deductible status verified.</p>
-                    </div>
+                    <button class="flex-1 bg-white border border-slate-200 py-3 rounded-2xl text-sm font-bold hover:bg-slate-50 transition flex items-center justify-center gap-2">🔖 Save</button>
+                    <button class="flex-1 bg-white border border-slate-200 py-3 rounded-2xl text-sm font-bold hover:bg-slate-50 transition flex items-center justify-center gap-2">📤 Share</button>
                 </div>
             </aside>
         </div>
 
-        <!-- Donation success toast -->
-        <div id="donateToast" class="hidden fixed bottom-5 right-5 bg-emerald-600 text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50">
-            <span>✓</span><span id="donateToastMsg" class="text-sm font-semibold"></span>
+        <!-- 捐款成功提示 -->
+        <div id="donateToast" class="hidden fixed bottom-8 right-8 bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50 animate-bounce">
+            <span class="text-emerald-400 font-bold text-xl">✓</span>
+            <span id="donateToastMsg" class="text-sm font-bold"></span>
         </div>
     </main>
 
-    <!-- Logout modal -->
+    <!-- 登出弹窗 -->
     <div id="logoutModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md px-8 py-8 text-center">
-            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H5a3 3 0 01-3-3V8a3 3 0 013-3h5a3 3 0 013 3v1"/></svg>
-            </div>
-            <h3 class="text-xl font-bold text-slate-900">Sign out of Fundraising System?</h3>
-            <p class="text-sm text-slate-500 mt-2">You'll need to sign in again to access your account.</p>
-            <div class="grid grid-cols-2 gap-3 mt-6">
-                <button id="logoutCancel" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">Cancel</button>
-                <button id="logoutConfirm" class="px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 rounded-xl hover:bg-rose-700">Sign out</button>
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
+            <h3 class="text-xl font-bold text-slate-900 mb-2">Sign out?</h3>
+            <div class="grid grid-cols-2 gap-3 mt-8">
+                <button id="logoutCancel" class="py-3 text-sm font-bold text-slate-500 hover:text-slate-900 transition">Cancel</button>
+                <button id="logoutConfirm" class="py-3 text-sm font-bold text-white bg-rose-600 rounded-2xl hover:bg-rose-700 transition">Sign out</button>
             </div>
         </div>
     </div>
 
-    <script src="data.js"></script>
     <script src="logout.js"></script>
     <script src="s20-campaign-detail.js"></script>
 </body>
